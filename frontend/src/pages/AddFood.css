@@ -1,0 +1,126 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+.add-food-page{
+
+    min-height:100vh;
+
+    background:#F5F7FA;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:40px;
+
+}
+
+.food-form{
+
+    width:700px;
+
+    background:white;
+
+    padding:40px;
+
+    border-radius:20px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.08);
+
+}
+
+.food-form h1{
+
+    text-align:center;
+
+    color:#166534;
+
+    margin-bottom:30px;
+
+}
+
+.food-form input,
+.food-form select,
+.food-form textarea{
+
+    width:100%;
+
+    padding:15px;
+
+    margin-bottom:18px;
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+    font-size:16px;
+
+    outline:none;
+
+    transition:.3s;
+
+}
+
+.food-form input:focus,
+.food-form select:focus,
+.food-form textarea:focus{
+
+    border-color:#16A34A;
+
+    box-shadow:0 0 8px rgba(22,163,74,.2);
+
+}
+
+.food-form textarea{
+
+    resize:none;
+
+}
+
+.food-form button{
+
+    width:100%;
+
+    padding:15px;
+
+    background:#16A34A;
+
+    color:white;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:17px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.food-form button:hover{
+
+    background:#15803D;
+
+}
+
+@media(max-width:768px){
+
+.food-form{
+
+width:100%;
+
+padding:25px;
+
+}
+
+}

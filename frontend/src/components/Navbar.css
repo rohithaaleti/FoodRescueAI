@@ -1,0 +1,200 @@
+/* ===========================
+   NAVBAR
+=========================== */
+
+.navbar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    z-index:1000;
+
+    background:rgba(255,255,255,.75);
+    backdrop-filter:blur(18px);
+
+    border-bottom:1px solid rgba(0,0,0,.05);
+}
+
+.navbar-container{
+
+    height:90px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+/* ===========================
+   LOGO
+=========================== */
+
+.logo{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+.logo-icon{
+
+    width:55px;
+
+    height:55px;
+
+    border-radius:18px;
+
+    background:linear-gradient(135deg,#22C55E,#16A34A);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:28px;
+
+    box-shadow:0 15px 30px rgba(34,197,94,.35);
+
+}
+
+.logo-text h2{
+
+    font-size:28px;
+
+    color:#111827;
+
+    font-weight:700;
+
+    letter-spacing:-0.5px;
+
+}
+
+.logo-text span{
+
+    display:block;
+
+    color:#6B7280;
+
+    font-size:13px;
+
+}
+
+/* ===========================
+   MENU
+=========================== */
+
+.nav-menu{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:42px;
+
+    list-style:none;
+
+}
+
+.nav-menu a{
+
+    color:#374151;
+
+    text-decoration:none;
+
+    font-weight:500;
+
+    transition:.25s;
+
+}
+
+.nav-menu a:hover{
+
+    color:#16A34A;
+
+}
+
+/* ===========================
+   BUTTONS
+=========================== */
+
+.nav-actions{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+.btn-login{
+
+    background:white;
+
+    border:2px solid #16A34A;
+
+    color:#16A34A;
+
+    padding:12px 24px;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.btn-login:hover{
+
+    background:#F0FDF4;
+
+}
+
+.btn-register{
+
+    background:#16A34A;
+
+    color:white;
+
+    padding:12px 26px;
+
+    border:none;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    box-shadow:0 12px 25px rgba(22,163,74,.25);
+
+    transition:.3s;
+
+}
+
+.btn-register:hover{
+
+    background:#15803D;
+
+    transform:translateY(-2px);
+
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:992px){
+
+    .nav-menu{
+
+        display:none;
+
+    }
+
+}

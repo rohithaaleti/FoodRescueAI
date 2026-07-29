@@ -1,0 +1,245 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+.dashboard{
+    display:flex;
+    min-height:100vh;
+    background:#F6F9FC;
+}
+
+/* ======================
+SIDEBAR
+====================== */
+
+.sidebar{
+    width:260px;
+    background:#166534;
+    color:white;
+    padding:30px 20px;
+    position:fixed;
+    height:100vh;
+    left:0;
+    top:0;
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:50px;
+}
+
+.logo h2{
+    font-size:24px;
+}
+
+.sidebar ul{
+    list-style:none;
+}
+
+.sidebar ul li{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:15px 18px;
+    border-radius:10px;
+    margin-bottom:15px;
+    cursor:pointer;
+    transition:.3s;
+    font-size:17px;
+}
+
+.sidebar ul li:hover{
+    background:#22C55E;
+}
+
+.active{
+    background:#22C55E;
+}
+
+/* ======================
+MAIN
+====================== */
+
+.main-content{
+    flex:1;
+    margin-left:260px;
+    padding:40px;
+}
+
+/* ======================
+TOPBAR
+====================== */
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:40px;
+}
+
+.topbar h1{
+    color:#111827;
+    font-size:34px;
+}
+
+.topbar p{
+    color:#6B7280;
+    margin-top:6px;
+}
+
+.profile-icon{
+    font-size:50px;
+    color:#16A34A;
+}
+
+/* ======================
+CARDS
+====================== */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:25px;
+    margin-bottom:40px;
+}
+
+.card{
+    background:white;
+    border-radius:18px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+}
+
+.card-icon{
+    font-size:42px;
+    color:#16A34A;
+    margin-bottom:15px;
+}
+
+.card h2{
+    font-size:34px;
+    margin-bottom:10px;
+}
+
+.card p{
+    color:#6B7280;
+}
+
+/* ======================
+QUICK ACTIONS
+====================== */
+
+.quick-actions{
+    background:white;
+    border-radius:18px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    margin-bottom:40px;
+}
+
+.quick-actions h2{
+    margin-bottom:20px;
+}
+
+.actions{
+    display:flex;
+    gap:20px;
+}
+
+.actions button{
+    background:#16A34A;
+    color:white;
+    border:none;
+    padding:14px 28px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.3s;
+    font-size:16px;
+}
+
+.actions button:hover{
+    background:#15803D;
+}
+
+/* ======================
+TABLE
+====================== */
+
+.recent{
+    background:white;
+    border-radius:18px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.recent h2{
+    margin-bottom:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#16A34A;
+    color:white;
+    padding:15px;
+    text-align:left;
+}
+
+td{
+    padding:15px;
+    border-bottom:1px solid #eee;
+}
+
+tr:hover{
+    background:#F3F4F6;
+}
+
+/* ======================
+RESPONSIVE
+====================== */
+
+@media(max-width:992px){
+
+.sidebar{
+    width:80px;
+}
+
+.sidebar .logo h2{
+    display:none;
+}
+
+.sidebar ul li{
+    justify-content:center;
+}
+
+.sidebar ul li{
+    font-size:0;
+}
+
+.sidebar ul li svg{
+    font-size:22px;
+}
+
+.main-content{
+    margin-left:80px;
+}
+
+.cards{
+    grid-template-columns:1fr;
+}
+
+.actions{
+    flex-direction:column;
+}
+
+}
