@@ -42,8 +42,15 @@ const acceptDonation = (req, res) => {
         });
     }
 
+    const donationId = Number(req.params.id);
+    if (!Number.isInteger(donationId) || donationId <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid donation ID."
+        });
+    }
+
     const ngoId = req.user.id;
-    const donationId = req.params.id;
 
     const sql = `
         UPDATE food_items
@@ -118,7 +125,21 @@ const getMyAcceptedDonations = (req, res) => {
 // ==========================
 const markAsDelivered = (req, res) => {
 
-    const donationId = req.params.id;
+    if (req.user.role !== "ngo") {
+        return res.status(403).json({
+            success: false,
+            message: "Only NGOs can mark donations as delivered."
+        });
+    }
+
+    const donationId = Number(req.params.id);
+    if (!Number.isInteger(donationId) || donationId <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid donation ID."
+        });
+    }
+
     const ngoId = req.user.id;
 
     const sql = `

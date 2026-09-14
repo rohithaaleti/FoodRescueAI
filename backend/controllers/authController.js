@@ -19,11 +19,13 @@ const registerUser = async (req, res) => {
             address
         } = req.body;
 
+        const ALLOWED_ROLES = ["restaurant", "ngo", "volunteer"];
+
         if (
-            !full_name ||
-            !email ||
-            !password ||
-            !role
+            typeof full_name !== "string" ||
+            typeof email !== "string" ||
+            typeof password !== "string" ||
+            typeof role !== "string"
         ) {
             return res.status(400).json({
                 success: false,
@@ -31,9 +33,39 @@ const registerUser = async (req, res) => {
             });
         }
 
+        const trimmedName = full_name.trim();
+        const trimmedEmail = email.trim().toLowerCase();
+        const trimmedRole = role.trim();
+
+        if (!trimmedName || !trimmedEmail || !password || !trimmedRole) {
+            return res.status(400).json({
+                success: false,
+                message: "Please fill all required fields."
+            });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email format."
+            });
+        }
+
+        if (!ALLOWED_ROLES.includes(trimmedRole)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid role. Allowed roles: restaurant, ngo, volunteer."
+            });
+        }
+
+        const trimmedPhone = typeof phone === "string" ? phone.trim() : (phone || null);
+        const trimmedOrg = typeof organization_name === "string" ? organization_name.trim() : (organization_name || null);
+        const trimmedAddress = typeof address === "string" ? address.trim() : (address || null);
+
         db.query(
             "SELECT * FROM users WHERE email = ?",
-            [email],
+            [trimmedEmail],
             async (err, result) => {
 
                 if (err) {
@@ -60,13 +92,13 @@ const registerUser = async (req, res) => {
                     (full_name,email,password,phone,role,organization_name,address)
                     VALUES (?,?,?,?,?,?,?)`,
                     [
-                        full_name,
-                        email,
+                        trimmedName,
+                        trimmedEmail,
                         hashedPassword,
-                        phone,
-                        role,
-                        organization_name,
-                        address
+                        trimmedPhone,
+                        trimmedRole,
+                        trimmedOrg,
+                        trimmedAddress
                     ],
                     (err, result) => {
 
@@ -112,7 +144,12 @@ const loginUser = (req, res) => {
 
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (
+        typeof email !== "string" ||
+        typeof password !== "string" ||
+        !email.trim() ||
+        !password
+    ) {
 
         return res.status(400).json({
             success: false,
@@ -121,9 +158,11 @@ const loginUser = (req, res) => {
 
     }
 
+    const trimmedEmail = email.trim().toLowerCase();
+
     db.query(
         "SELECT * FROM users WHERE email = ?",
-        [email],
+        [trimmedEmail],
         async (err, result) => {
 
             if (err) {

@@ -130,10 +130,6 @@ function Register() {
                         Volunteer
                     </option>
 
-                    <option value="admin">
-                        Admin
-                    </option>
-
                 </select>
 
                 <input
