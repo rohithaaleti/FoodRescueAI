@@ -2,17 +2,25 @@ const express = require("express");
 const router = express.Router();
 
 const verifyToken = require("../middleware/verifyToken");
+const requireRole = require("../middleware/requireRole");
 
 const {
     getDashboardStats,
     getAllUsers,
-    getAllDonations
+    getAllDonations,
+    deleteDonation
 } = require("../controllers/adminController");
 
-router.get("/dashboard", verifyToken, getDashboardStats);
+// Dashboard
+router.get("/dashboard", verifyToken, requireRole("admin"), getDashboardStats);
 
-router.get("/users", verifyToken, getAllUsers);
+// Users
+router.get("/users", verifyToken, requireRole("admin"), getAllUsers);
 
-router.get("/donations", verifyToken, getAllDonations);
+// Donations
+router.get("/donations", verifyToken, requireRole("admin"), getAllDonations);
 
-module.exports = router;
+// Delete Donation
+router.delete("/donation/:id", verifyToken, requireRole("admin"), deleteDonation);
+
+module.exports = router;
