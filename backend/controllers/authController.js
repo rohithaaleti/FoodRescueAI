@@ -73,7 +73,7 @@ const registerUser = async (req, res) => {
 
                     return res.status(500).json({
                         success: false,
-                        error: err.message
+                        error: "Server Error"
                     });
                 }
 
@@ -108,7 +108,7 @@ const registerUser = async (req, res) => {
 
                             return res.status(500).json({
                                 success: false,
-                                error: err.message
+                                error: "Server Error"
                             });
 
                         }
@@ -130,7 +130,7 @@ const registerUser = async (req, res) => {
 
         res.status(500).json({
             success: false,
-            error: error.message
+            error: "Server Error"
         });
 
     }
@@ -171,7 +171,7 @@ const loginUser = (req, res) => {
 
                 return res.status(500).json({
                     success: false,
-                    error: err.message
+                    error: "Server Error"
                 });
 
             }
@@ -231,7 +231,7 @@ const loginUser = (req, res) => {
 
                 return res.status(500).json({
                     success: false,
-                    error: error.message
+                    error: "Server Error"
                 });
 
             }

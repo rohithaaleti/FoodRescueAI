@@ -74,11 +74,11 @@ const addFood = (req, res) => {
 
             if (err) {
 
-                console.log(err);
+                console.error("ADD FOOD ERROR:", err);
 
                 return res.status(500).json({
                     success: false,
-                    error: err.message
+                    error: "Server Error"
                 });
 
             }
@@ -107,9 +107,11 @@ const getMyDonations = (req, res) => {
 
             if (err) {
 
+                console.error("GET MY DONATIONS ERROR:", err);
+
                 return res.status(500).json({
                     success: false,
-                    error: err.message
+                    error: "Server Error"
                 });
 
             }
@@ -145,9 +147,11 @@ const getDashboardStats = (req, res) => {
 
         if (err) {
 
+            console.error("GET DASHBOARD STATS ERROR:", err);
+
             return res.status(500).json({
                 success: false,
-                error: err.message
+                error: "Server Error"
             });
 
         }
@@ -184,7 +188,7 @@ const deleteDonation = (req, res) => {
 
             if (err) {
 
-                console.log(err);
+                console.error("DELETE DONATION ERROR:", err);
 
                 return res.status(500).json({
                     success: false,
@@ -234,9 +238,10 @@ const getDonationById = (req, res) => {
         (err, result) => {
 
             if (err) {
+                console.error("GET DONATION ERROR:", err);
                 return res.status(500).json({
                     success: false,
-                    error: err.message
+                    error: "Server Error"
                 });
             }
 
@@ -370,9 +375,10 @@ const updateDonation = (req, res) => {
         (err, result) => {
 
             if (err) {
+                console.error("UPDATE DONATION ERROR:", err);
                 return res.status(500).json({
                     success: false,
-                    error: err.message
+                    error: "Server Error"
                 });
             }
 

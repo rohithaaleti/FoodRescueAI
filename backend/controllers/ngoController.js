@@ -15,9 +15,10 @@ const getAvailableFood = (req, res) => {
     db.query(sql, (err, result) => {
 
         if (err) {
+            console.error("GET AVAILABLE FOOD ERROR:", err);
             return res.status(500).json({
                 success: false,
-                error: err.message
+                error: "Server Error"
             });
         }
 
@@ -66,9 +67,10 @@ const acceptDonation = (req, res) => {
     db.query(sql, [ngoId, donationId], (err, result) => {
 
         if (err) {
+            console.error("ACCEPT DONATION ERROR:", err);
             return res.status(500).json({
                 success: false,
-                error: err.message
+                error: "Server Error"
             });
         }
 
@@ -105,6 +107,7 @@ const getMyAcceptedDonations = (req, res) => {
     db.query(sql, [ngoId], (err, result) => {
 
         if (err) {
+            console.error("GET ACCEPTED DONATIONS ERROR:", err);
             return res.status(500).json({
                 success: false,
                 message: "Database Error"
@@ -153,9 +156,10 @@ const markAsDelivered = (req, res) => {
     db.query(sql, [donationId, ngoId], (err, result) => {
 
         if (err) {
+            console.error("MARK DONATION DELIVERED ERROR:", err);
             return res.status(500).json({
                 success: false,
-                message: err.message
+                message: "Server Error"
             });
         }
 
