@@ -138,7 +138,7 @@ const getDashboardStats = (req, res) => {
         SELECT
             COUNT(*) AS totalDonations,
             SUM(status='Available') AS availableDonations,
-            SUM(status='Delivered') AS completedDonations
+            SUM(status='Completed') AS completedDonations
         FROM food_items
         WHERE donor_id = ?
     `;

@@ -19,8 +19,10 @@ const getDashboardStats = (req, res) => {
 
     db.query(sql, (err, result) => {
 
-        if (err)
-            return res.status(500).json(err);
+        if (err) {
+            console.error("ADMIN DASHBOARD STATS ERROR:", err);
+            return res.status(500).json({ success: false, message: "Server Error" });
+        }
 
         res.json({
             success: true,
@@ -46,8 +48,10 @@ const getAllUsers = (req, res) => {
          ORDER BY id DESC`,
         (err, result) => {
 
-            if (err)
-                return res.status(500).json(err);
+            if (err) {
+                console.error("ADMIN GET USERS ERROR:", err);
+                return res.status(500).json({ success: false, message: "Server Error" });
+            }
 
             res.json({
                 success: true,
@@ -58,8 +62,74 @@ const getAllUsers = (req, res) => {
     );
 
 };
+const getAllDonations = (req, res) => {
 
+    const sql = `
+        SELECT
+            food_items.id,
+            food_items.food_name,
+            food_items.quantity,
+            food_items.status,
+            food_items.pickup_address,
+            users.full_name AS restaurant
+        FROM food_items
+        JOIN users
+        ON food_items.donor_id = users.id
+        ORDER BY food_items.id DESC
+    `;
+
+    db.query(sql, (err, result) => {
+
+        if (err) {
+            console.error("ADMIN GET DONATIONS ERROR:", err);
+            return res.status(500).json({ success: false, message: "Server Error" });
+        }
+
+        res.json({
+            success: true,
+            donations: result
+        });
+
+    });
+
+};
+// ================= Delete Donation =================
+
+const deleteDonation = (req, res) => {
+
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid donation ID."
+        });
+    }
+
+    db.query(
+        "DELETE FROM food_items WHERE id = ?",
+        [id],
+        (err, result) => {
+
+            if (err) {
+                console.error("ADMIN DELETE DONATION ERROR:", err);
+                return res.status(500).json({
+                    success: false,
+                    message: "Server Error"
+                });
+            }
+
+            res.json({
+                success: true,
+                message: "Donation deleted successfully"
+            });
+
+        }
+    );
+
+};
 module.exports = {
     getDashboardStats,
-    getAllUsers
+    getAllUsers,
+    getAllDonations,
+    deleteDonation
 };
