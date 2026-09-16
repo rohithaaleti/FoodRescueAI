@@ -122,66 +122,8 @@ const getMyAcceptedDonations = (req, res) => {
     });
 
 };
-
-// ==========================
-// Mark Donation Delivered
-// ==========================
-const markAsDelivered = (req, res) => {
-
-    if (req.user.role !== "ngo") {
-        return res.status(403).json({
-            success: false,
-            message: "Only NGOs can mark donations as delivered."
-        });
-    }
-
-    const donationId = Number(req.params.id);
-    if (!Number.isInteger(donationId) || donationId <= 0) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid donation ID."
-        });
-    }
-
-    const ngoId = req.user.id;
-
-    const sql = `
-        UPDATE food_items
-        SET status='Completed'
-        WHERE id=?
-        AND accepted_by=?
-        AND status='Reserved'
-    `;
-
-    db.query(sql, [donationId, ngoId], (err, result) => {
-
-        if (err) {
-            console.error("MARK DONATION DELIVERED ERROR:", err);
-            return res.status(500).json({
-                success: false,
-                message: "Server Error"
-            });
-        }
-
-        if (result.affectedRows === 0) {
-            return res.status(400).json({
-                success: false,
-                message: "Donation not found or already completed."
-            });
-        }
-
-        res.json({
-            success: true,
-            message: "Donation marked as completed."
-        });
-
-    });
-
-};
-
-module.exports = {
+   module.exports = {
     getAvailableFood,
     acceptDonation,
-    getMyAcceptedDonations,
-    markAsDelivered
+    getMyAcceptedDonations
 };

@@ -7,8 +7,7 @@ const requireRole = require("../middleware/requireRole");
 const {
     getAvailableFood,
     acceptDonation,
-    getMyAcceptedDonations,
-    markAsDelivered
+    getMyAcceptedDonations
 } = require("../controllers/ngoController");
 
 // Available Donations — NGOs only
@@ -20,7 +19,5 @@ router.get("/my-donations", verifyToken, requireRole("ngo"), getMyAcceptedDonati
 // Accept Donation
 router.put("/accept/:id", verifyToken, requireRole("ngo"), acceptDonation);
 
-// Mark Donation as Delivered
-router.put("/deliver/:id", verifyToken, requireRole("ngo"), markAsDelivered);
 
-module.exports = router;
+module.exports = router;
