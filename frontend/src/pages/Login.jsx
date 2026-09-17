@@ -1,10 +1,13 @@
 import "./Login.css";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import api from "../api/client";
 
 function Login() {
 
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -24,75 +27,54 @@ function Login() {
 
         try {
 
-            const response = await fetch(
-                "http://localhost:5000/api/auth/login",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify(formData)
-                }
+            const response = await api.post(
+                "/api/auth/login",
+                formData
             );
 
-            const data = await response.json();
+            const data = response.data;
 
-            if (response.ok) {
+            if (data.token && data.user) {
 
-                // Save JWT Token
-                localStorage.setItem("token", data.token);
-
-                // Save Logged-in User Details
-                localStorage.setItem(
-                    "user",
-                    JSON.stringify(data.user)
-                );
+                login({
+    token: data.token,
+    user: data.user
+});
 
                 alert("Login Successful");
 
-                // Redirect based on role
                 if (data.user.role === "restaurant") {
-
                     navigate("/restaurant");
-
                 } else if (data.user.role === "ngo") {
-
                     navigate("/ngo");
-
                 } else if (data.user.role === "volunteer") {
-
                     navigate("/volunteer");
-
                 } else if (data.user.role === "admin") {
-
                     navigate("/admin");
-
                 } else {
-
                     alert("Unknown User Role");
-
                 }
 
             } else {
 
-                alert(data.message);
+                alert(data.message || "Login failed");
 
             }
 
         } catch (error) {
 
-            console.log(error);
+            console.error(error);
 
-            alert("Server Error");
+            alert(
+                error.response?.data?.message ||
+                "Server Error"
+            );
 
         }
 
     };
 
     return (
-
         <div className="login-page">
 
             <form
@@ -123,29 +105,20 @@ function Login() {
                 />
 
                 <button type="submit">
-
                     Login
-
                 </button>
 
                 <span>
-
                     Don't have an account?
-
                     <Link to="/register">
-
                         Register
-
                     </Link>
-
                 </span>
 
             </form>
 
         </div>
-
     );
-
 }
 
 export default Login;

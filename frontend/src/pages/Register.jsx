@@ -1,7 +1,7 @@
 import "./Register.css";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import api from "../api/client";
 function Register() {
 
     const navigate = useNavigate();
@@ -25,44 +25,41 @@ function Register() {
 
     };
 
-    const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            const response = await fetch(
-                "http://localhost:5000/api/auth/register",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                }
-            );
+        const response = await api.post(
+            "/api/auth/register",
+            formData
+        );
 
-            const data = await response.json();
+        const data = response.data;
 
-            if (response.ok) {
+        if (response.status >= 200 && response.status < 300) {
 
-                alert("Registration Successful");
-                navigate("/login");
+            alert("Registration Successful");
+            navigate("/login");
 
-            } else {
+        } else {
 
-                alert(data.message);
-
-            }
-
-        } catch (err) {
-
-            console.log(err);
-            alert("Server Error");
+            alert(data.message || "Registration failed");
 
         }
 
-    };
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            err.response?.data?.message ||
+            "Server Error"
+        );
+
+    }
+};
 
     return (
 

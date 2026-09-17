@@ -1,6 +1,6 @@
 import "./AddFood.css";
 import { useState } from "react";
-
+import api from "../api/client";
 const AddFood = () => {
 
   const [food, setFood] = useState({
@@ -19,58 +19,51 @@ const AddFood = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
 
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
+  try {
 
-      const token = localStorage.getItem("token");
+    const response = await api.post(
+      "/api/food",
+      food
+    );
 
-      const response = await fetch(
-        "http://localhost:5000/api/food",
-        {
-          method: "POST",
+    const data = response.data;
 
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
+    if (response.status >= 200 && response.status < 300) {
 
-          body: JSON.stringify(food)
-        }
-      );
+      alert("Food Donation Added Successfully ✅");
 
-      const data = await response.json();
+      setFood({
+        food_name: "",
+        quantity: "",
+        food_type: "",
+        expiry_time: "",
+        pickup_address: "",
+        description: ""
+      });
 
-      if (response.ok) {
+    } else {
 
-        alert("Food Donation Added Successfully ✅");
-
-        setFood({
-          food_name: "",
-          quantity: "",
-          food_type: "",
-          expiry_time: "",
-          pickup_address: "",
-          description: ""
-        });
-
-      } else {
-
-        alert(data.error || data.message);
-
-      }
-
-    } catch (err) {
-
-      console.log(err);
-
-      alert("Server Error");
+      alert(data.error || data.message || "Failed to add donation");
 
     }
 
-  };
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      err.response?.data?.error ||
+      err.response?.data?.message ||
+      "Server Error"
+    );
+
+  }
+
+};
 
   return (
 

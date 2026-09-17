@@ -1,7 +1,7 @@
 import "./MyDonations.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import api from "../api/client";
 const MyDonations = () => {
 
     const [foodItems, setFoodItems] = useState([]);
@@ -12,77 +12,64 @@ const MyDonations = () => {
     }, []);
 
     // Fetch Donations
-    const fetchDonations = async () => {
+   const fetchDonations = async () => {
 
-        try {
+    try {
 
-            const token = localStorage.getItem("token");
+        const response = await api.get("/api/food/my-donations");
 
-            const response = await fetch(
-                "http://localhost:5000/api/food/my-donations",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+        const data = response.data;
 
-            const data = await response.json();
-
-            if (data.success) {
-                setFoodItems(data.foodItems);
-            }
-
-        } catch (err) {
-            console.log(err);
+        if (data.success) {
+            setFoodItems(data.foodItems);
         }
 
-    };
+    } catch (err) {
+
+        console.error(err);
+
+    }
+
+};
 
     // Delete Donation
     const deleteDonation = async (id) => {
 
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this donation?"
-        );
+    const confirmDelete = window.confirm(
+        "Are you sure you want to delete this donation?"
+    );
 
-        if (!confirmDelete) return;
+    if (!confirmDelete) return;
 
-        try {
+    try {
 
-            const token = localStorage.getItem("token");
+        const response = await api.delete(`/api/food/${id}`);
 
-            const response = await fetch(
-                `http://localhost:5000/api/food/${id}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+        const data = response.data;
 
-            const data = await response.json();
+        if (data.success) {
 
-            if (data.success) {
+            alert("Donation Deleted Successfully!");
+            fetchDonations();
 
-                alert("Donation Deleted Successfully!");
-                fetchDonations();
+        } else {
 
-            } else {
-
-                alert(data.message);
-
-            }
-
-        } catch (err) {
-
-            console.log(err);
-            alert("Something went wrong.");
+            alert(data.message || "Failed to delete donation");
 
         }
 
-    };
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            err.response?.data?.message ||
+            "Something went wrong."
+        );
+
+    }
+
+};
 
     return (
 
