@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../api/client";
 
 const EditDonation = () => {
 
@@ -25,18 +26,9 @@ const EditDonation = () => {
 
         try {
 
-            const token = localStorage.getItem("token");
+            const response = await api.get(`/api/food/${id}`);
 
-            const response = await fetch(
-                `http://localhost:5000/api/food/${id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
-            const data = await response.json();
+            const data = response.data;
 
             if (data.success) {
 
@@ -60,8 +52,12 @@ const EditDonation = () => {
 
         } catch (err) {
 
-            console.log(err);
-            alert("Failed to load donation.");
+            console.error(err);
+
+            alert(
+                err.response?.data?.message ||
+                "Failed to load donation."
+            );
 
         }
 
@@ -84,21 +80,12 @@ const EditDonation = () => {
 
         try {
 
-            const token = localStorage.getItem("token");
-
-            const response = await fetch(
-                `http://localhost:5000/api/food/${id}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify(formData)
-                }
+            const response = await api.put(
+                `/api/food/${id}`,
+                formData
             );
 
-            const data = await response.json();
+            const data = response.data;
 
             if (data.success) {
 
@@ -107,23 +94,25 @@ const EditDonation = () => {
 
             } else {
 
-                alert(data.message);
+                alert(data.message || "Failed to update donation.");
 
             }
 
         } catch (err) {
 
-            console.log(err);
-            alert("Something went wrong.");
+            console.error(err);
+
+            alert(
+                err.response?.data?.message ||
+                "Something went wrong."
+            );
 
         }
 
     };
 
     if (loading) {
-
         return <h2>Loading...</h2>;
-
     }
 
     return (
@@ -135,7 +124,6 @@ const EditDonation = () => {
             <form onSubmit={handleSubmit}>
 
                 <div>
-
                     <label>Food Name</label>
 
                     <input
@@ -145,13 +133,11 @@ const EditDonation = () => {
                         onChange={handleChange}
                         required
                     />
-
                 </div>
 
                 <br />
 
                 <div>
-
                     <label>Quantity</label>
 
                     <input
@@ -161,13 +147,11 @@ const EditDonation = () => {
                         onChange={handleChange}
                         required
                     />
-
                 </div>
 
                 <br />
 
                 <div>
-
                     <label>Food Type</label>
 
                     <select
@@ -177,14 +161,14 @@ const EditDonation = () => {
                     >
                         <option value="Veg">Veg</option>
                         <option value="Non-Veg">Non-Veg</option>
+                        <option value="Vegan">Vegan</option>
+                        <option value="Other">Other</option>
                     </select>
-
                 </div>
 
                 <br />
 
                 <div>
-
                     <label>Expiry Time</label>
 
                     <input
@@ -194,13 +178,11 @@ const EditDonation = () => {
                         onChange={handleChange}
                         required
                     />
-
                 </div>
 
                 <br />
 
                 <div>
-
                     <label>Pickup Address</label>
 
                     <textarea
@@ -209,13 +191,11 @@ const EditDonation = () => {
                         onChange={handleChange}
                         required
                     />
-
                 </div>
 
                 <br />
 
                 <div>
-
                     <label>Image URL</label>
 
                     <input
@@ -224,7 +204,6 @@ const EditDonation = () => {
                         value={formData.image_url}
                         onChange={handleChange}
                     />
-
                 </div>
 
                 <br />
