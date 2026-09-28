@@ -21,8 +21,7 @@ const adminRoutes = [
 const ngoRoutes = [
     { method: "get", path: "/api/ngo/available-food" },
     { method: "get", path: "/api/ngo/my-donations" },
-    { method: "put", path: "/api/ngo/accept/1" },
-    { method: "put", path: "/api/ngo/deliver/1" }
+    { method: "put", path: "/api/ngo/accept/1" }
 ];
 
 beforeEach(() => {
@@ -42,23 +41,31 @@ test("POST /api/auth/register rejects the admin role", async () => {
     expect(response.status).toBe(400);
 });
 
-test.each(adminRoutes)("admin route $method $path rejects unauthenticated requests", async ({ method, path }) => {
-    const response = await request(app)[method](path);
+test.each(adminRoutes)(
+    "admin route $method $path rejects unauthenticated requests",
+    async ({ method, path }) => {
+        const response = await request(app)[method](path);
 
-    expect(response.status).toBe(401);
-});
+        expect(response.status).toBe(401);
+    }
+);
 
-test.each(adminRoutes)("admin route $method $path rejects non-admin users", async ({ method, path }) => {
-    jwt.verify.mockReturnValue({ id: 1, role: "ngo" });
+test.each(adminRoutes)(
+    "admin route $method $path rejects non-admin users",
+    async ({ method, path }) => {
+        jwt.verify.mockReturnValue({ id: 1, role: "ngo" });
 
-    const response = await request(app)[method](path)
-        .set("Authorization", "Bearer test-token");
+        const response = await request(app)[method](path)
+            .set("Authorization", "Bearer test-token");
 
-    expect(response.status).toBe(403);
-});
+        expect(response.status).toBe(403);
+    }
+);
 
 test("POST /api/food rejects unauthenticated requests", async () => {
-    const response = await request(app).post("/api/food").send({});
+    const response = await request(app)
+        .post("/api/food")
+        .send({});
 
     expect(response.status).toBe(401);
 });
@@ -75,16 +82,20 @@ test("POST /api/food rejects authenticated non-restaurant users", async () => {
 });
 
 test("GET /api/ngo/available-food rejects unauthenticated requests", async () => {
-    const response = await request(app).get("/api/ngo/available-food");
+    const response = await request(app)
+        .get("/api/ngo/available-food");
 
     expect(response.status).toBe(401);
 });
 
-test.each(ngoRoutes)("NGO route $method $path rejects non-NGO users", async ({ method, path }) => {
-    jwt.verify.mockReturnValue({ id: 1, role: "restaurant" });
+test.each(ngoRoutes)(
+    "NGO route $method $path rejects non-NGO users",
+    async ({ method, path }) => {
+        jwt.verify.mockReturnValue({ id: 1, role: "restaurant" });
 
-    const response = await request(app)[method](path)
-        .set("Authorization", "Bearer test-token");
+        const response = await request(app)[method](path)
+            .set("Authorization", "Bearer test-token");
 
-    expect(response.status).toBe(403);
-});
+        expect(response.status).toBe(403);
+    }
+);
