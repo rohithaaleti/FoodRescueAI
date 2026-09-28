@@ -1,0 +1,47 @@
+const express = require("express");
+
+const router = express.Router();
+
+const verifyToken = require("../middleware/verifyToken");
+
+const {
+    getAvailableDeliveries,
+    acceptDelivery,
+    getMyDeliveries,
+    markDeliveryCompleted
+} = require("../controllers/volunteerController");
+
+
+// Available deliveries
+router.get(
+    "/available-deliveries",
+    verifyToken,
+    getAvailableDeliveries
+);
+
+
+// Accept delivery
+router.put(
+    "/accept/:id",
+    verifyToken,
+    acceptDelivery
+);
+
+
+// My deliveries
+router.get(
+    "/my-deliveries",
+    verifyToken,
+    getMyDeliveries
+);
+
+
+// Complete delivery
+router.put(
+    "/complete/:id",
+    verifyToken,
+    markDeliveryCompleted
+);
+
+
+module.exports = router;
