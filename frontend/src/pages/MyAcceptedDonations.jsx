@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import api from "../api/client";
 
 function MyAcceptedDonations() {
-
     const [donations, setDonations] = useState([]);
 
     useEffect(() => {
@@ -9,67 +9,19 @@ function MyAcceptedDonations() {
     }, []);
 
     const fetchMyDonations = async () => {
-
         try {
-
-            const token = localStorage.getItem("token");
-
-            const response = await fetch(
-                "http://localhost:5000/api/ngo/my-donations",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
-            const data = await response.json();
+            const response = await api.get("/api/ngo/my-donations");
+            const data = response.data;
 
             if (data.success) {
                 setDonations(data.donations);
             }
-
         } catch (error) {
             console.log(error);
         }
-
-    };
-
-    const markDelivered = async (id) => {
-
-        try {
-
-            const token = localStorage.getItem("token");
-
-            const response = await fetch(
-                `http://localhost:5000/api/ngo/deliver/${id}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
-            const data = await response.json();
-
-            alert(data.message);
-
-            if (response.ok) {
-                fetchMyDonations();
-            }
-
-        } catch (error) {
-
-            console.log(error);
-            alert("Server Error");
-
-        }
-
     };
 
     return (
-
         <div style={{ padding: "30px" }}>
 
             <h1>My Accepted Donations</h1>
@@ -77,7 +29,6 @@ function MyAcceptedDonations() {
             <table border="1" cellPadding="10">
 
                 <thead>
-
                     <tr>
                         <th>ID</th>
                         <th>Food Name</th>
@@ -87,7 +38,6 @@ function MyAcceptedDonations() {
                         <th>Accepted Time</th>
                         <th>Action</th>
                     </tr>
-
                 </thead>
 
                 <tbody>
@@ -112,21 +62,13 @@ function MyAcceptedDonations() {
                                 <td>{food.accepted_time}</td>
 
                                 <td>
-
-                                    {food.status === "Reserved" ? (
-
-                                        <button
-                                            onClick={() => markDelivered(food.id)}
-                                        >
-                                            Mark Delivered
-                                        </button>
-
-                                    ) : (
-
-                                        "Completed"
-
-                                    )}
-
+                                    {food.status === "Reserved"
+                                        ? "Waiting for Volunteer"
+                                        : food.status === "Assigned"
+                                        ? "Volunteer Assigned"
+                                        : food.status === "Completed"
+                                        ? "Completed"
+                                        : food.status}
                                 </td>
 
                             </tr>
@@ -140,9 +82,7 @@ function MyAcceptedDonations() {
             </table>
 
         </div>
-
     );
-
 }
 
 export default MyAcceptedDonations;
