@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const verifyToken = require("../middleware/verifyToken");
+const requireRole = require("../middleware/requireRole");
 
 const {
     getAvailableDeliveries,
@@ -16,6 +17,7 @@ const {
 router.get(
     "/available-deliveries",
     verifyToken,
+    requireRole("volunteer"),
     getAvailableDeliveries
 );
 
@@ -24,6 +26,7 @@ router.get(
 router.put(
     "/accept/:id",
     verifyToken,
+    requireRole("volunteer"),
     acceptDelivery
 );
 
@@ -32,6 +35,7 @@ router.put(
 router.get(
     "/my-deliveries",
     verifyToken,
+    requireRole("volunteer"),
     getMyDeliveries
 );
 
@@ -40,6 +44,7 @@ router.get(
 router.put(
     "/complete/:id",
     verifyToken,
+    requireRole("volunteer"),
     markDeliveryCompleted
 );
 

@@ -11,15 +11,15 @@ const {
     updateDonation
 } = require("../controllers/foodController");
 
-const verifyToken = require("../middleware/authMiddleware");
+const verifyToken = require("../middleware/verifyToken");
 const requireRole = require("../middleware/requireRole");
 
-// Add Food — restaurants only
+// Restaurant routes
 router.post("/", verifyToken, requireRole("restaurant"), addFood);
-router.put("/:id", verifyToken, updateDonation);
-// Get Logged-in Restaurant Donations
-router.get("/my-donations", verifyToken, getMyDonations);
-router.get("/dashboard-stats", verifyToken, getDashboardStats);
-router.get("/:id", verifyToken, getDonationById);
-router.delete("/:id", verifyToken, deleteDonation);
+router.put("/:id", verifyToken, requireRole("restaurant"), updateDonation);
+router.get("/my-donations", verifyToken, requireRole("restaurant"), getMyDonations);
+router.get("/dashboard-stats", verifyToken, requireRole("restaurant"), getDashboardStats);
+router.get("/:id", verifyToken, requireRole("restaurant"), getDonationById);
+router.delete("/:id", verifyToken, requireRole("restaurant"), deleteDonation);
+
 module.exports = router;

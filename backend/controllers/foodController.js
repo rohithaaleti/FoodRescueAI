@@ -78,7 +78,7 @@ const addFood = (req, res) => {
 
                 return res.status(500).json({
                     success: false,
-                    error: "Server Error"
+                    message: "Server Error"
                 });
 
             }
@@ -111,7 +111,7 @@ const getMyDonations = (req, res) => {
 
                 return res.status(500).json({
                     success: false,
-                    error: "Server Error"
+                    message: "Server Error"
                 });
 
             }
@@ -151,7 +151,7 @@ const getDashboardStats = (req, res) => {
 
             return res.status(500).json({
                 success: false,
-                error: "Server Error"
+                message: "Server Error"
             });
 
         }
@@ -241,7 +241,7 @@ const getDonationById = (req, res) => {
                 console.error("GET DONATION ERROR:", err);
                 return res.status(500).json({
                     success: false,
-                    error: "Server Error"
+                    message: "Server Error"
                 });
             }
 
@@ -378,7 +378,7 @@ const updateDonation = (req, res) => {
                 console.error("UPDATE DONATION ERROR:", err);
                 return res.status(500).json({
                     success: false,
-                    error: "Server Error"
+                    message: "Server Error"
                 });
             }
 

@@ -18,7 +18,7 @@ const getAvailableFood = (req, res) => {
             console.error("GET AVAILABLE FOOD ERROR:", err);
             return res.status(500).json({
                 success: false,
-                error: "Server Error"
+                message: "Server Error"
             });
         }
 
@@ -70,7 +70,7 @@ const acceptDonation = (req, res) => {
             console.error("ACCEPT DONATION ERROR:", err);
             return res.status(500).json({
                 success: false,
-                error: "Server Error"
+                message: "Server Error"
             });
         }
 
@@ -110,7 +110,7 @@ const getMyAcceptedDonations = (req, res) => {
             console.error("GET ACCEPTED DONATIONS ERROR:", err);
             return res.status(500).json({
                 success: false,
-                message: "Database Error"
+                message: "Server Error"
             });
         }
 
