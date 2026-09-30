@@ -182,7 +182,7 @@ const deleteDonation = (req, res) => {
     const donorId = req.user.id;
 
     db.query(
-        "DELETE FROM food_items WHERE id = ? AND donor_id = ?",
+        "DELETE FROM food_items WHERE id = ? AND donor_id = ? AND status = 'Available'",
         [donationId, donorId],
         (err, result) => {
 
@@ -199,10 +199,37 @@ const deleteDonation = (req, res) => {
 
             if (result.affectedRows === 0) {
 
-                return res.status(404).json({
-                    success: false,
-                    message: "Donation not found"
-                });
+                db.query(
+                    "SELECT status FROM food_items WHERE id = ? AND donor_id = ?",
+                    [donationId, donorId],
+                    (checkErr, checkResult) => {
+                        if (checkErr) {
+                            console.error("DELETE DONATION CHECK ERROR:", checkErr);
+                            return res.status(500).json({
+                                success: false,
+                                message: "Server Error"
+                            });
+                        }
+
+                        if (checkResult.length > 0) {
+                            return res.status(400).json({
+                                success: false,
+                                message: "Only available donations can be deleted."
+                            });
+                        }
+
+                        return res.status(404).json({
+                            success: false,
+                            message: "Donation not found"
+                        });
+                    }
+                );
+
+                return;
+
+
+
+
 
             }
 
@@ -366,7 +393,7 @@ const updateDonation = (req, res) => {
     const sql = `
         UPDATE food_items
         SET ${fields.join(", ")}
-        WHERE id = ? AND donor_id = ?
+        WHERE id = ? AND donor_id = ? AND status = 'Available'
     `;
 
     db.query(
@@ -383,10 +410,36 @@ const updateDonation = (req, res) => {
             }
 
             if (result.affectedRows === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Donation not found"
-                });
+                db.query(
+                    "SELECT status FROM food_items WHERE id = ? AND donor_id = ?",
+                    [donationId, donorId],
+                    (checkErr, checkResult) => {
+                        if (checkErr) {
+                            console.error("UPDATE DONATION CHECK ERROR:", checkErr);
+                            return res.status(500).json({
+                                success: false,
+                                message: "Server Error"
+                            });
+                        }
+
+                        if (checkResult.length > 0) {
+                            return res.status(400).json({
+                                success: false,
+                                message: "Only available donations can be updated."
+                            });
+                        }
+
+                        return res.status(404).json({
+                            success: false,
+                            message: "Donation not found"
+                        });
+                    }
+                );
+
+                return;
+
+
+
             }
 
             res.json({
