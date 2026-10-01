@@ -67,6 +67,7 @@ function NGODashboard() {
                         <th>Food Name</th>
                         <th>Quantity</th>
                         <th>Pickup Address</th>
+                        <th>Expiry</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -78,7 +79,7 @@ function NGODashboard() {
                     {foodItems.length === 0 ? (
 
                         <tr>
-                            <td colSpan="6">No Available Donations</td>
+                            <td colSpan="7">No Available Donations</td>
                         </tr>
 
                     ) : (
@@ -91,6 +92,11 @@ function NGODashboard() {
                                 <td>{food.food_name}</td>
                                 <td>{food.quantity}</td>
                                 <td>{food.pickup_address}</td>
+                                <td>
+                                    {food.expiry_time
+                                        ? new Date(food.expiry_time).toLocaleString()
+                                        : "N/A"}
+                                </td>
                                 <td>{food.status}</td>
 
                                 <td>
