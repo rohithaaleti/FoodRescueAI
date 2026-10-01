@@ -121,20 +121,24 @@ const MyDonations = () => {
                                 <td>{item.status}</td>
 
                                 <td>
+                                    {item.status === "Available" ? (
+                                        <>
+                                            <button
+                                                onClick={() => navigate(`/edit/${item.id}`)}
+                                                style={{ marginRight: "10px" }}
+                                            >
+                                                Edit
+                                            </button>
 
-                                    <button
-                                        onClick={() => navigate(`/edit/${item.id}`)}
-                                        style={{ marginRight: "10px" }}
-                                    >
-                                        Edit
-                                    </button>
-
-                                    <button
-                                        onClick={() => deleteDonation(item.id)}
-                                    >
-                                        Delete
-                                    </button>
-
+                                            <button
+                                                onClick={() => deleteDonation(item.id)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <span>—</span>
+                                    )}
                                 </td>
 
                             </tr>

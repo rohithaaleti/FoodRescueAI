@@ -34,6 +34,12 @@ const EditDonation = () => {
 
                 const donation = data.donation;
 
+                if (donation.status !== "Available") {
+                    alert("Only available donations can be edited.");
+                    navigate("/my-donations");
+                    return;
+                }
+
                 setFormData({
                     food_name: donation.food_name,
                     quantity: donation.quantity,
@@ -47,6 +53,7 @@ const EditDonation = () => {
 
                 alert(data.message);
                 navigate("/my-donations");
+                return;
 
             }
 
