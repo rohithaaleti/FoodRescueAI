@@ -218,6 +218,82 @@ describe("Donation Lifecycle Rules - NGO Accept", () => {
     });
 });
 
+describe("Donation Lifecycle Rules - NGO Expiry Rules", () => {
+    test("expired Available donation is not returned by getAvailableFood", async () => {
+        jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
+        db.query.mockImplementation((sql, callback) => {
+            callback(null, []);
+        });
+
+        const response = await request(app)
+            .get("/api/ngo/available-food")
+            .set("Authorization", "Bearer token");
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.foodItems).toEqual([]);
+
+        const sql = db.query.mock.calls[0][0];
+        expect(sql).toContain("status='Available'");
+        expect(sql).toContain("expiry_time > NOW()");
+    });
+
+    test("future-expiry Available donation remains eligible in getAvailableFood", async () => {
+        jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
+        const mockItem = { id: 1, food_name: "Fresh Rice", status: "Available", expiry_time: "2099-01-01T00:00:00.000Z" };
+        db.query.mockImplementation((sql, callback) => {
+            callback(null, [mockItem]);
+        });
+
+        const response = await request(app)
+            .get("/api/ngo/available-food")
+            .set("Authorization", "Bearer token");
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.foodItems).toHaveLength(1);
+        expect(response.body.foodItems[0]).toEqual(mockItem);
+    });
+
+    test("expired Available donation cannot be accepted", async () => {
+        jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
+        db.query.mockImplementation((sql, params, callback) => {
+            callback(null, { affectedRows: 0 });
+        });
+
+        const response = await request(app)
+            .put("/api/ngo/accept/1")
+            .set("Authorization", "Bearer token");
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Donation already accepted or not found.");
+
+        const sql = db.query.mock.calls[0][0];
+        expect(sql).toContain("expiry_time > NOW()");
+    });
+
+    test("future-expiry Available donation can still be accepted", async () => {
+        jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
+        db.query.mockImplementation((sql, params, callback) => {
+            callback(null, { affectedRows: 1 });
+        });
+
+        const response = await request(app)
+            .put("/api/ngo/accept/1")
+            .set("Authorization", "Bearer token");
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe("Donation accepted successfully.");
+
+        const sql = db.query.mock.calls[0][0];
+        expect(sql).toContain("status='Reserved'");
+        expect(sql).toContain("status='Available'");
+        expect(sql).toContain("expiry_time > NOW()");
+    });
+});
+
 describe("Donation Lifecycle Rules - Volunteer Accept", () => {
     test("Reserved donation can be accepted", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });

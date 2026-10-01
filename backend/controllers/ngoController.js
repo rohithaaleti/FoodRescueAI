@@ -9,6 +9,7 @@ const getAvailableFood = (req, res) => {
         SELECT *
         FROM food_items
         WHERE status='Available'
+            AND expiry_time > NOW()
         ORDER BY id DESC
     `;
 
@@ -62,6 +63,7 @@ const acceptDonation = (req, res) => {
         WHERE
             id=?
             AND status='Available'
+            AND expiry_time > NOW()
     `;
 
     db.query(sql, [ngoId, donationId], (err, result) => {
