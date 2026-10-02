@@ -1,3 +1,11 @@
+## Current Progress
+
+### NGO Donation Discovery
+- Added expiry visibility to available donations.
+- Added expiry urgency indicators for donations expiring within 6 or 24 hours.
+- Added client-side search across food name, food type, and pickup address.
+- Added food-type filtering.
+- Added sorting by newest, expiry soonest, and food name.
 # FoodRescue AI — Project State & Ground Truth Reconnaissance
 
 **Audit Date:** 2026-09-14  
