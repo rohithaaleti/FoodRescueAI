@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const matchingService = require("../services/matchingService");
+const aiRecommendationService = require("../services/aiRecommendationService");
 
 // ==========================
 // Get Available Food
@@ -124,8 +126,64 @@ const getMyAcceptedDonations = (req, res) => {
     });
 
 };
-   module.exports = {
+// ==========================
+// Get Recommendations for Donation
+// ==========================
+const getRecommendationsForDonation = (req, res) => {
+    const foodId = Number(req.params.foodId);
+    if (!Number.isInteger(foodId) || foodId <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid donation ID."
+        });
+    }
+
+    const sql = "SELECT * FROM food_items WHERE id = ?";
+    db.query(sql, [foodId], async (err, result) => {
+        if (err) {
+            console.error("GET RECOMMENDATIONS ERROR:", err);
+            return res.status(500).json({ success: false, message: "Server Error" });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ success: false, message: "Donation not found" });
+        }
+
+        const donation = result[0];
+
+        if (donation.status !== "Available") {
+            return res.status(400).json({ success: false, message: "Donation is not available" });
+        }
+
+        const now = Date.now();
+        if (new Date(donation.expiry_time).getTime() <= now) {
+            return res.status(400).json({ success: false, message: "Donation has expired" });
+        }
+
+        try {
+            const matchResult = await matchingService.getMatchingNGOsForDonation(foodId);
+            const aiResult = await aiRecommendationService.enhanceRecommendations(donation, matchResult.recommendations);
+            
+            res.json({
+                success: true,
+                id: donation.id,
+                food_name: donation.food_name,
+                food_type: donation.food_type,
+                quantity: donation.quantity,
+                expiry_time: donation.expiry_time,
+                ai_summary: aiResult.summary || null,
+                recommendations: aiResult.recommendations
+            });
+        } catch (matchErr) {
+            console.error("MATCHING SERVICE ERROR:", matchErr);
+            return res.status(500).json({ success: false, message: "Server Error" });
+        }
+    });
+};
+
+module.exports = {
     getAvailableFood,
     acceptDonation,
-    getMyAcceptedDonations
+    getMyAcceptedDonations,
+    getRecommendationsForDonation
 };

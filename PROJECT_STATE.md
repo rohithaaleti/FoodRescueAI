@@ -1,5 +1,20 @@
 ## Current Progress
 
+### Smart NGO Matching Engine (Phase 1)
+- Implemented deterministic rule-based matching engine in [`backend/services/matchingService.js`](file:///d:/Projects/FoodRescueAI/backend/services/matchingService.js).
+- Added Haversine distance calculation, food type compatibility checks, capacity verification, active workload constraints, and expiry urgency scoring.
+- Added comprehensive unit test suite in [`backend/tests/matchingEngine.test.js`](file:///d:/Projects/FoodRescueAI/backend/tests/matchingEngine.test.js).
+- Created database migration file `docs/migrations/001_add_ngo_matching_foundation.sql`.
+
+### Smart NGO Matching AI Layer (Phase 2)
+- Added dedicated AI recommendation service in [`backend/services/aiRecommendationService.js`](file:///d:/Projects/FoodRescueAI/backend/services/aiRecommendationService.js) with modular provider adapters for Gemini, OpenAI, and Mock implementations in `backend/services/aiProviders/`.
+- Strict architecture: Deterministic matching engine remains the sole source of truth for eligibility, capacity, and scoring.
+- PII-free sanitization: AI payload contains only operational facts (food type, quantity, urgency, distance, capacity, workload, deterministic reasons); zero user emails, phones, or addresses are transmitted.
+- Hallucination safeguard: Output is strictly validated to ensure only pre-qualified, ranked NGO IDs are referenced; any unknown NGO references cause the AI output to be rejected.
+- Resilient fallback: On missing API keys, timeouts, network issues, or malformed responses, matching gracefully falls back to deterministic recommendations.
+- Added environment variable configuration (`AI_ENABLED`, `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `AI_API_URL`, `AI_TIMEOUT_MS`) in `.env.example`.
+- Added comprehensive unit and integration tests in `backend/tests/aiRecommendation.test.js` and `backend/tests/aiProviders.test.js`.
+
 ### NGO Donation Discovery
 - Added expiry visibility to available donations.
 - Added expiry urgency indicators for donations expiring within 6 or 24 hours.
