@@ -466,3 +466,134 @@ describe("Donation Lifecycle Rules - Volunteer Complete", () => {
         expect(db.query.mock.calls[0][1]).toEqual([1, 20]);
     });
 });
+
+describe("Donation Lifecycle Concurrency & Race Conditions", () => {
+    test("Two simultaneous NGO acceptance attempts for the same Available donation: exactly one succeeds, one fails, and final state is Reserved by winning NGO", async () => {
+        jwt.verify.mockImplementation((token) => {
+            if (token === "ngo_token_1") return { id: 101, role: "ngo" };
+            if (token === "ngo_token_2") return { id: 102, role: "ngo" };
+            return { id: 101, role: "ngo" };
+        });
+
+        const donationRow = {
+            id: 1,
+            status: "Available",
+            accepted_by: null,
+            expiry_time: "2099-01-01T00:00:00.000Z"
+        };
+
+        db.query.mockImplementation((sql, params, callback) => {
+            if (sql.includes("status='Reserved'") && sql.includes("status='Available'")) {
+                const [ngoId, donationId] = params;
+                if (donationRow.id === donationId && donationRow.status === "Available") {
+                    donationRow.status = "Reserved";
+                    donationRow.accepted_by = ngoId;
+                    return callback(null, { affectedRows: 1 });
+                } else {
+                    return callback(null, { affectedRows: 0 });
+                }
+            }
+            callback(new Error("Unexpected SQL query: " + sql));
+        });
+
+        const [res1, res2] = await Promise.all([
+            request(app)
+                .put("/api/ngo/accept/1")
+                .set("Authorization", "Bearer ngo_token_1"),
+            request(app)
+                .put("/api/ngo/accept/1")
+                .set("Authorization", "Bearer ngo_token_2")
+        ]);
+
+        const responses = [res1, res2];
+        const successful = responses.filter((r) => r.status === 200);
+        const failed = responses.filter((r) => r.status === 400);
+
+        expect(successful).toHaveLength(1);
+        expect(failed).toHaveLength(1);
+
+        expect(successful[0].body).toEqual({
+            success: true,
+            message: "Donation accepted successfully."
+        });
+
+        expect(failed[0].body).toEqual({
+            success: false,
+            message: "Donation already accepted or not found."
+        });
+
+        expect(donationRow.status).toBe("Reserved");
+        expect([101, 102]).toContain(donationRow.accepted_by);
+
+        if (res1.status === 200) {
+            expect(donationRow.accepted_by).toBe(101);
+        } else {
+            expect(donationRow.accepted_by).toBe(102);
+        }
+    });
+
+    test("Two simultaneous volunteer acceptance attempts for the same Reserved donation: exactly one succeeds, one fails, and final state is Assigned to winning volunteer", async () => {
+        jwt.verify.mockImplementation((token) => {
+            if (token === "vol_token_1") return { id: 201, role: "volunteer" };
+            if (token === "vol_token_2") return { id: 202, role: "volunteer" };
+            return { id: 201, role: "volunteer" };
+        });
+
+        const donationRow = {
+            id: 1,
+            status: "Reserved",
+            accepted_by: 101,
+            volunteer_id: null
+        };
+
+        db.query.mockImplementation((sql, params, callback) => {
+            if (sql.includes("status = 'Assigned'") && sql.includes("status = 'Reserved'")) {
+                const [volunteerId, donationId] = params;
+                if (donationRow.id === donationId && donationRow.status === "Reserved" && donationRow.volunteer_id === null) {
+                    donationRow.status = "Assigned";
+                    donationRow.volunteer_id = volunteerId;
+                    return callback(null, { affectedRows: 1 });
+                } else {
+                    return callback(null, { affectedRows: 0 });
+                }
+            }
+            callback(new Error("Unexpected SQL query: " + sql));
+        });
+
+        const [res1, res2] = await Promise.all([
+            request(app)
+                .put("/api/volunteer/accept/1")
+                .set("Authorization", "Bearer vol_token_1"),
+            request(app)
+                .put("/api/volunteer/accept/1")
+                .set("Authorization", "Bearer vol_token_2")
+        ]);
+
+        const responses = [res1, res2];
+        const successful = responses.filter((r) => r.status === 200);
+        const failed = responses.filter((r) => r.status === 400);
+
+        expect(successful).toHaveLength(1);
+        expect(failed).toHaveLength(1);
+
+        expect(successful[0].body).toEqual({
+            success: true,
+            message: "Delivery accepted successfully."
+        });
+
+        expect(failed[0].body).toEqual({
+            success: false,
+            message: "Delivery already assigned or not found."
+        });
+
+        expect(donationRow.status).toBe("Assigned");
+        expect([201, 202]).toContain(donationRow.volunteer_id);
+
+        if (res1.status === 200) {
+            expect(donationRow.volunteer_id).toBe(201);
+        } else {
+            expect(donationRow.volunteer_id).toBe(202);
+        }
+    });
+});
+
