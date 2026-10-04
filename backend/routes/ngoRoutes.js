@@ -8,7 +8,9 @@ const {
     getAvailableFood,
     acceptDonation,
     getMyAcceptedDonations,
-    getRecommendationsForDonation
+    getRecommendationsForDonation,
+    getNGOProfile,
+    updateNGOProfile
 } = require("../controllers/ngoController");
 
 // Available Donations — NGOs only
@@ -23,4 +25,9 @@ router.get("/recommendations/:foodId", verifyToken, requireRole("ngo"), getRecom
 // Accept Donation
 router.put("/accept/:id", verifyToken, requireRole("ngo"), acceptDonation);
 
+// NGO Matching Profile / Settings
+router.get("/profile", verifyToken, requireRole("ngo"), getNGOProfile);
+router.put("/profile", verifyToken, requireRole("ngo"), updateNGOProfile);
+
 module.exports = router;
+

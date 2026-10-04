@@ -21,7 +21,9 @@ const adminRoutes = [
 const ngoRoutes = [
     { method: "get", path: "/api/ngo/available-food" },
     { method: "get", path: "/api/ngo/my-donations" },
-    { method: "put", path: "/api/ngo/accept/1" }
+    { method: "put", path: "/api/ngo/accept/1" },
+    { method: "get", path: "/api/ngo/profile" },
+    { method: "put", path: "/api/ngo/profile" }
 ];
 
 const restaurantRoutes = [

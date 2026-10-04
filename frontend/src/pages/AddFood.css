@@ -77,6 +77,47 @@
 
 }
 
+.coordinates-group {
+    margin-bottom: 18px;
+}
+
+.coordinates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #4B5563;
+    font-weight: 500;
+}
+
+.detect-btn {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    border-radius: 6px !important;
+    background: #EBF7EE !important;
+    color: #166534 !important;
+    border: 1px solid #BBF7D0 !important;
+    cursor: pointer;
+    width: auto !important;
+    margin: 0 !important;
+    transition: all 0.2s ease;
+}
+
+.detect-btn:hover {
+    background: #DCFCE7 !important;
+}
+
+.coordinates-inputs {
+    display: flex;
+    gap: 12px;
+}
+
+.coordinates-inputs input {
+    margin-bottom: 0 !important;
+}
+
 .food-form textarea{
 
     resize:none;
@@ -121,6 +162,15 @@ width:100%;
 
 padding:25px;
 
+}
+
+.coordinates-inputs {
+    flex-direction: column;
+    gap: 10px;
+}
+
+.coordinates-inputs input {
+    margin-bottom: 8px !important;
 }
 
 }

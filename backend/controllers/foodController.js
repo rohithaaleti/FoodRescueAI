@@ -13,6 +13,8 @@ const addFood = (req, res) => {
         food_type,
         expiry_time,
         pickup_address,
+        pickup_latitude,
+        pickup_longitude,
         image_url
     } = req.body;
 
@@ -43,6 +45,30 @@ const addFood = (req, res) => {
         });
     }
 
+    let latVal = null;
+    if (pickup_latitude !== null && pickup_latitude !== undefined && pickup_latitude !== "") {
+        const latNum = Number(pickup_latitude);
+        if (isNaN(latNum) || latNum < -90 || latNum > 90) {
+            return res.status(400).json({
+                success: false,
+                message: "Pickup latitude must be a valid number between -90 and 90."
+            });
+        }
+        latVal = latNum;
+    }
+
+    let lonVal = null;
+    if (pickup_longitude !== null && pickup_longitude !== undefined && pickup_longitude !== "") {
+        const lonNum = Number(pickup_longitude);
+        if (isNaN(lonNum) || lonNum < -180 || lonNum > 180) {
+            return res.status(400).json({
+                success: false,
+                message: "Pickup longitude must be a valid number between -180 and 180."
+            });
+        }
+        lonVal = lonNum;
+    }
+
     const sql = `
         INSERT INTO food_items
         (
@@ -52,10 +78,12 @@ const addFood = (req, res) => {
             food_type,
             expiry_time,
             pickup_address,
+            pickup_latitude,
+            pickup_longitude,
             status,
             image_url
         )
-        VALUES (?,?,?,?,?,?,?,?)
+        VALUES (?,?,?,?,?,?,?,?,?,?)
     `;
 
     db.query(
@@ -67,6 +95,8 @@ const addFood = (req, res) => {
             food_type.trim(),
             expiry_time,
             pickup_address.trim(),
+            latVal,
+            lonVal,
             "Available",
             (typeof image_url === "string" && image_url.trim()) ? image_url.trim() : null
         ],
@@ -226,10 +256,6 @@ const deleteDonation = (req, res) => {
                 );
 
                 return;
-
-
-
-
 
             }
 
@@ -437,8 +463,6 @@ const updateDonation = (req, res) => {
                 );
 
                 return;
-
-
 
             }
 

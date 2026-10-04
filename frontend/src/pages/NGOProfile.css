@@ -1,0 +1,346 @@
+.ngo-profile-page {
+    min-height: 100vh;
+    background: #F5F7FA;
+    padding: 30px 20px 60px 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.ngo-profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ngo-profile-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ngo-profile-nav-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.ngo-nav-btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #16A34A;
+    background: white;
+    color: #166534;
+    transition: all 0.2s ease;
+}
+
+.ngo-nav-btn:hover {
+    background: #EBF7EE;
+}
+
+.ngo-nav-btn-primary {
+    background: #16A34A;
+    color: white;
+}
+
+.ngo-nav-btn-primary:hover {
+    background: #15803D;
+}
+
+.ngo-profile-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    padding: 35px;
+    margin-bottom: 24px;
+    border: 1px solid #E5E7EB;
+}
+
+.ngo-profile-header {
+    border-bottom: 1px solid #E5E7EB;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.ngo-profile-header h1 {
+    color: #166534;
+    font-size: 26px;
+    margin: 0 0 6px 0;
+    font-weight: 700;
+}
+
+.ngo-profile-header p {
+    color: #6B7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+.ngo-org-summary {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+}
+
+.ngo-org-summary-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.ngo-org-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.ngo-org-item {
+    font-size: 13px;
+    color: #4B5563;
+}
+
+.ngo-org-item strong {
+    color: #1F2937;
+    display: block;
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+.form-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #166534;
+    margin: 24px 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #F3F4F6;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.form-group .help-text {
+    font-size: 12px;
+    color: #6B7280;
+    margin-top: 4px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+    border-color: #16A34A;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.form-input.has-error {
+    border-color: #DC2626;
+    background-color: #FEF2F2;
+}
+
+.field-error {
+    color: #DC2626;
+    font-size: 12px;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* Checkbox group */
+.checkbox-group-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.checkbox-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #F9FAFB;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    transition: all 0.2s ease;
+}
+
+.checkbox-chip.active {
+    background: #EBF7EE;
+    border-color: #16A34A;
+    color: #166534;
+}
+
+.checkbox-chip input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: #16A34A;
+    width: 16px;
+    height: 16px;
+}
+
+/* Active Toggle */
+.active-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #F9FAFB;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
+    cursor: pointer;
+}
+
+.active-toggle-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #16A34A;
+    cursor: pointer;
+}
+
+.active-toggle-text strong {
+    display: block;
+    font-size: 14px;
+    color: #1F2937;
+}
+
+.active-toggle-text span {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+/* Geolocation button */
+.geo-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.geo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid #D1D5DB;
+    background: #FFFFFF;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.geo-btn:hover {
+    background: #F3F4F6;
+    border-color: #9CA3AF;
+}
+
+/* Alert banners */
+.alert-banner {
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.alert-success {
+    background-color: #EBF7EE;
+    color: #166534;
+    border: 1px solid #BBF7D0;
+}
+
+.alert-error {
+    background-color: #FEF2F2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
+/* Save button */
+.save-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: #16A34A;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    margin-top: 15px;
+}
+
+.save-btn:hover:not(:disabled) {
+    background: #15803D;
+}
+
+.save-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.save-btn:disabled {
+    background: #9CA3AF;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6B7280;
+    font-size: 16px;
+}
+
+@media (max-width: 640px) {
+    .ngo-profile-card {
+        padding: 22px 18px;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .ngo-profile-nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

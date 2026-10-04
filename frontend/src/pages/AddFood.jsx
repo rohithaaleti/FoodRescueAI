@@ -1,6 +1,7 @@
 import "./AddFood.css";
 import { useState } from "react";
 import api from "../api/client";
+
 const AddFood = () => {
 
   const [food, setFood] = useState({
@@ -9,6 +10,8 @@ const AddFood = () => {
     food_type: "",
     expiry_time: "",
     pickup_address: "",
+    pickup_latitude: "",
+    pickup_longitude: "",
     description: ""
   });
 
@@ -19,51 +22,80 @@ const AddFood = () => {
     });
   };
 
- const handleSubmit = async (e) => {
+  const handleDetectLocation = (e) => {
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
 
-  e.preventDefault();
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
 
-  try {
-
-    const response = await api.post(
-      "/api/food",
-      food
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(7));
+        const lon = Number(pos.coords.longitude.toFixed(7));
+        setFood((prev) => ({
+          ...prev,
+          pickup_latitude: String(lat),
+          pickup_longitude: String(lon)
+        }));
+      },
+      (err) => {
+        console.error("Geolocation error:", err);
+        alert("Unable to retrieve location. Please check browser permissions or enter coordinates manually.");
+      }
     );
+  };
 
-    const data = response.data;
+  const handleSubmit = async (e) => {
 
-    if (response.status >= 200 && response.status < 300) {
+    e.preventDefault();
 
-      alert("Food Donation Added Successfully ✅");
+    try {
 
-      setFood({
-        food_name: "",
-        quantity: "",
-        food_type: "",
-        expiry_time: "",
-        pickup_address: "",
-        description: ""
-      });
+      const response = await api.post(
+        "/api/food",
+        food
+      );
 
-    } else {
+      const data = response.data;
 
-      alert(data.error || data.message || "Failed to add donation");
+      if (response.status >= 200 && response.status < 300) {
+
+        alert("Food Donation Added Successfully ✅");
+
+        setFood({
+          food_name: "",
+          quantity: "",
+          food_type: "",
+          expiry_time: "",
+          pickup_address: "",
+          pickup_latitude: "",
+          pickup_longitude: "",
+          description: ""
+        });
+
+      } else {
+
+        alert(data.error || data.message || "Failed to add donation");
+
+      }
+
+    } catch (err) {
+
+      console.error(err);
+
+      alert(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Server Error"
+      );
 
     }
 
-  } catch (err) {
-
-    console.error(err);
-
-    alert(
-      err.response?.data?.error ||
-      err.response?.data?.message ||
-      "Server Error"
-    );
-
-  }
-
-};
+  };
 
   return (
 
@@ -139,6 +171,37 @@ const AddFood = () => {
           onChange={handleChange}
           required
         />
+
+        <div className="coordinates-group">
+          <div className="coordinates-header">
+            <span>GPS Coordinates (Optional)</span>
+            <button
+              type="button"
+              className="detect-btn"
+              onClick={handleDetectLocation}
+            >
+              📍 Detect Current Location
+            </button>
+          </div>
+          <div className="coordinates-inputs">
+            <input
+              type="number"
+              step="any"
+              placeholder="Pickup Latitude (-90 to 90)"
+              name="pickup_latitude"
+              value={food.pickup_latitude}
+              onChange={handleChange}
+            />
+            <input
+              type="number"
+              step="any"
+              placeholder="Pickup Longitude (-180 to 180)"
+              name="pickup_longitude"
+              value={food.pickup_longitude}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
 
         <textarea
           rows="5"

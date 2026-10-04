@@ -13,6 +13,7 @@ import EditDonation from "./pages/EditDonation";
 
 import NGODashboard from "./pages/NGODashboard";
 import MyAcceptedDonations from "./pages/MyAcceptedDonations";
+import NGOProfile from "./pages/NGOProfile";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import VolunteerDashboard from "./pages/VolunteerDashboard";
@@ -46,6 +47,10 @@ function App() {
           path="/ngo/my-donations"
           element={<ProtectedRoute allowedRoles={["ngo"]}><MyAcceptedDonations /></ProtectedRoute>}
         />
+        <Route
+          path="/ngo/profile"
+          element={<ProtectedRoute allowedRoles={["ngo"]}><NGOProfile /></ProtectedRoute>}
+        />
 
         {/* Admin */}
 
@@ -54,9 +59,9 @@ function App() {
           element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>}
         />
         <Route
-  path="/volunteer"
-  element={<ProtectedRoute allowedRoles={["volunteer"]}><VolunteerDashboard /></ProtectedRoute>}
-/>
+          path="/volunteer"
+          element={<ProtectedRoute allowedRoles={["volunteer"]}><VolunteerDashboard /></ProtectedRoute>}
+        />
 
       </Routes>
       </AuthProvider>

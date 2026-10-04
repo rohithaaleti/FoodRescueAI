@@ -124,16 +124,27 @@ function NGODashboard() {
         <div style={{ padding: "30px" }}>
             <h1>NGO Dashboard</h1>
 
-            <button
-                onClick={() => navigate("/ngo/my-donations")}
-                style={{
-                    marginBottom: "20px",
-                    padding: "10px 20px",
-                    cursor: "pointer"
-                }}
-            >
-                My Accepted Donations
-            </button>
+            <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
+                <button
+                    onClick={() => navigate("/ngo/my-donations")}
+                    style={{
+                        padding: "10px 20px",
+                        cursor: "pointer"
+                    }}
+                >
+                    My Accepted Donations
+                </button>
+
+                <button
+                    onClick={() => navigate("/ngo/profile")}
+                    style={{
+                        padding: "10px 20px",
+                        cursor: "pointer"
+                    }}
+                >
+                    Matching Profile & Settings
+                </button>
+            </div>
 
             <h3>Available Food Donations</h3>
 
