@@ -479,3 +479,9 @@ Prioritized by **Risk**, **Dependency**, **Correctness**, and **Product Value**:
     - Upgrade `AdminDashboard`, `NGODashboard`, `VolunteerDashboard`, `MyAcceptedDonations`, and `EditDonation` from raw HTML `<table border="1">` to clean, styled responsive components matching the design system.
 12. **Implement Real Matching or Notification Logic:**
     - Build actual rule-based or algorithmic food redistribution matching to deliver on the core product vision.
+## Smart Match Checkpoint
+- Smart NGO Matching is working end-to-end.
+- Deterministic matching ranks eligible NGOs using food compatibility, capacity, workload, urgency, and distance.
+- AI recommendation layer provides explanations without changing deterministic scores.
+- NGO Dashboard Smart Match UI is implemented and tested locally.
+- NGO matching database foundation is active locally.
