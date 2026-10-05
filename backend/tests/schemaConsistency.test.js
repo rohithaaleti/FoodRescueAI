@@ -97,3 +97,31 @@ test("migration 001_add_ngo_matching_foundation.sql defines correct schema, fore
     expect(migrationSql).toContain("chk_food_pickup_longitude");
 });
 
+test("migration 002_add_notifications.sql defines correct schema, foreign keys, and constraints", () => {
+    const fs = require("fs");
+    const path = require("path");
+
+    const migrationPath = path.join(__dirname, "../../docs/migrations/002_add_notifications.sql");
+    expect(fs.existsSync(migrationPath)).toBe(true);
+
+    const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+    // Table creation checks
+    expect(migrationSql).toContain("CREATE TABLE IF NOT EXISTS notifications");
+    expect(migrationSql).toContain("id INT AUTO_INCREMENT PRIMARY KEY");
+    expect(migrationSql).toContain("user_id INT NOT NULL");
+    expect(migrationSql).toContain("type VARCHAR(50) NOT NULL");
+    expect(migrationSql).toContain("title VARCHAR(255) NOT NULL");
+    expect(migrationSql).toContain("message TEXT NOT NULL");
+    expect(migrationSql).toContain("donation_id INT NULL");
+    expect(migrationSql).toContain("is_read TINYINT(1) NOT NULL DEFAULT 0");
+    expect(migrationSql).toContain("created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
+
+    // Foreign key check
+    expect(migrationSql).toContain("FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE");
+    expect(migrationSql).toContain("FOREIGN KEY (donation_id) REFERENCES food_items(id) ON DELETE SET NULL");
+
+    // Indexes and uniqueness
+    expect(migrationSql).toContain("INDEX idx_user_read_created (user_id, is_read, created_at)");
+    expect(migrationSql).toContain("UNIQUE KEY idx_unique_notification (user_id, donation_id, type)");
+});

@@ -2,6 +2,7 @@ import "./MyDonations.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/client";
+import NotificationBell from "../components/NotificationBell";
 const MyDonations = () => {
 
     const [foodItems, setFoodItems] = useState([]);
@@ -74,8 +75,10 @@ const MyDonations = () => {
     return (
 
         <div className="my-donations">
-
-            <h1>My Donations</h1>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <h1 style={{ margin: 0 }}>My Donations</h1>
+                <NotificationBell />
+            </div>
 
             <table>
 

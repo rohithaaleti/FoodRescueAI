@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
+import NotificationBell from "../components/NotificationBell";
 
 const VolunteerDashboard = () => {
   const [availableDeliveries, setAvailableDeliveries] = useState([]);
@@ -102,8 +103,10 @@ const VolunteerDashboard = () => {
 
   return (
     <div style={{ padding: "30px" }}>
-
-      <h1>Volunteer Dashboard</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1 style={{ margin: 0 }}>Volunteer Dashboard</h1>
+        <NotificationBell />
+      </div>
 
       {/* ==========================
           Available Deliveries

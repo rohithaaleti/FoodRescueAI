@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
+import NotificationBell from "../components/NotificationBell";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({});
@@ -68,7 +69,10 @@ const AdminDashboard = () => {
 
   return (
     <div style={{ padding: "30px" }}>
-      <h1>Admin Dashboard</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
+        <NotificationBell />
+      </div>
 
       <h2>Statistics</h2>
 

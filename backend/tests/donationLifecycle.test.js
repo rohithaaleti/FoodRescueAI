@@ -8,8 +8,13 @@ jest.mock("jsonwebtoken", () => ({
     verify: jest.fn()
 }));
 
+jest.mock("../services/notificationService", () => ({
+    createNotification: jest.fn().mockResolvedValue({ inserted: true, id: 1, affectedRows: 1 })
+}));
+
 const db = require("../config/db");
 const jwt = require("jsonwebtoken");
+const notificationService = require("../services/notificationService");
 const app = require("../server");
 
 beforeEach(() => {
@@ -148,9 +153,12 @@ describe("Donation Lifecycle Rules - DELETE", () => {
 });
 
 describe("Donation Lifecycle Rules - NGO Accept", () => {
-    test("Available donation can be accepted", async () => {
+    test("Available donation can be accepted and creates exactly one DONATION_ACCEPTED notification for donor", async () => {
         jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
         db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10 }]);
+            }
             callback(null, { affectedRows: 1 });
         });
 
@@ -161,15 +169,24 @@ describe("Donation Lifecycle Rules - NGO Accept", () => {
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
         expect(response.body.message).toBe("Donation accepted successfully.");
-        expect(db.query).toHaveBeenCalledTimes(1);
 
-        const sql = db.query.mock.calls[0][0];
-        expect(sql).toContain("status='Reserved'");
-        expect(sql).toContain("status='Available'");
-        expect(db.query.mock.calls[0][1]).toEqual([5, 1]);
+        const updateSqlCall = db.query.mock.calls.find(call => typeof call[0] === "string" && call[0].includes("status='Reserved'"));
+        expect(updateSqlCall).toBeDefined();
+        expect(updateSqlCall[0]).toContain("status='Reserved'");
+        expect(updateSqlCall[0]).toContain("status='Available'");
+        expect(updateSqlCall[1]).toEqual([5, 1]);
+
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
+        expect(notificationService.createNotification).toHaveBeenCalledWith({
+            userId: 10,
+            type: "DONATION_ACCEPTED",
+            title: "Donation Accepted",
+            message: "Your donation has been accepted by an NGO.",
+            donationId: 1
+        });
     });
 
-    test("Already Reserved donation cannot be accepted again", async () => {
+    test("Already Reserved donation cannot be accepted again and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
         db.query.mockImplementation((sql, params, callback) => {
             // affectedRows is 0 because status is already 'Reserved'
@@ -183,9 +200,10 @@ describe("Donation Lifecycle Rules - NGO Accept", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Donation already accepted or not found.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
     });
 
-    test("Assigned donation cannot be accepted", async () => {
+    test("Assigned donation cannot be accepted and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
         db.query.mockImplementation((sql, params, callback) => {
             // affectedRows is 0 because status is 'Assigned'
@@ -199,9 +217,10 @@ describe("Donation Lifecycle Rules - NGO Accept", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Donation already accepted or not found.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
     });
 
-    test("Completed donation cannot be accepted", async () => {
+    test("Completed donation cannot be accepted and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
         db.query.mockImplementation((sql, params, callback) => {
             // affectedRows is 0 because status is 'Completed'
@@ -215,6 +234,28 @@ describe("Donation Lifecycle Rules - NGO Accept", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Donation already accepted or not found.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
+    });
+
+    test("Notification failure does not break successful NGO acceptance", async () => {
+        jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
+        notificationService.createNotification.mockRejectedValueOnce(new Error("Notification DB error"));
+
+        db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10 }]);
+            }
+            callback(null, { affectedRows: 1 });
+        });
+
+        const response = await request(app)
+            .put("/api/ngo/accept/1")
+            .set("Authorization", "Bearer token");
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe("Donation accepted successfully.");
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
     });
 });
 
@@ -268,14 +309,18 @@ describe("Donation Lifecycle Rules - NGO Expiry Rules", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Donation already accepted or not found.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
 
         const sql = db.query.mock.calls[0][0];
         expect(sql).toContain("expiry_time > NOW()");
     });
 
-    test("future-expiry Available donation can still be accepted", async () => {
+    test("future-expiry Available donation can still be accepted and notifies donor", async () => {
         jwt.verify.mockReturnValue({ id: 5, role: "ngo" });
         db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10 }]);
+            }
             callback(null, { affectedRows: 1 });
         });
 
@@ -291,13 +336,17 @@ describe("Donation Lifecycle Rules - NGO Expiry Rules", () => {
         expect(sql).toContain("status='Reserved'");
         expect(sql).toContain("status='Available'");
         expect(sql).toContain("expiry_time > NOW()");
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
     });
 });
 
 describe("Donation Lifecycle Rules - Volunteer Accept", () => {
-    test("Reserved donation can be accepted", async () => {
+    test("Reserved donation can be accepted and creates exactly two VOLUNTEER_ASSIGNED notifications", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10, accepted_by: 5 }]);
+            }
             callback(null, { affectedRows: 1 });
         });
 
@@ -308,16 +357,32 @@ describe("Donation Lifecycle Rules - Volunteer Accept", () => {
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
         expect(response.body.message).toBe("Delivery accepted successfully.");
-        expect(db.query).toHaveBeenCalledTimes(1);
 
-        const sql = db.query.mock.calls[0][0];
-        expect(sql).toContain("status = 'Assigned'");
-        expect(sql).toContain("status = 'Reserved'");
-        expect(sql).toContain("volunteer_id IS NULL");
-        expect(db.query.mock.calls[0][1]).toEqual([20, 1]);
+        const updateSqlCall = db.query.mock.calls.find(call => typeof call[0] === "string" && call[0].includes("status = 'Assigned'"));
+        expect(updateSqlCall).toBeDefined();
+        expect(updateSqlCall[0]).toContain("status = 'Assigned'");
+        expect(updateSqlCall[0]).toContain("status = 'Reserved'");
+        expect(updateSqlCall[0]).toContain("volunteer_id IS NULL");
+        expect(updateSqlCall[1]).toEqual([20, 1]);
+
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(2);
+        expect(notificationService.createNotification).toHaveBeenCalledWith({
+            userId: 10,
+            type: "VOLUNTEER_ASSIGNED",
+            title: "Volunteer Assigned",
+            message: "A volunteer has been assigned to your donation.",
+            donationId: 1
+        });
+        expect(notificationService.createNotification).toHaveBeenCalledWith({
+            userId: 5,
+            type: "VOLUNTEER_ASSIGNED",
+            title: "Volunteer Assigned",
+            message: "A volunteer has been assigned to the donation.",
+            donationId: 1
+        });
     });
 
-    test("Available donation cannot be accepted", async () => {
+    test("Available donation cannot be accepted and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
             callback(null, { affectedRows: 0 });
@@ -330,9 +395,10 @@ describe("Donation Lifecycle Rules - Volunteer Accept", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Delivery already assigned or not found.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
     });
 
-    test("Completed donation cannot be accepted", async () => {
+    test("Completed donation cannot be accepted and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
             callback(null, { affectedRows: 0 });
@@ -345,9 +411,10 @@ describe("Donation Lifecycle Rules - Volunteer Accept", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Delivery already assigned or not found.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
     });
 
-    test("Already Assigned donation cannot be claimed by another volunteer", async () => {
+    test("Already Assigned donation cannot be claimed by another volunteer and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 21, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
             // affectedRows is 0 because volunteer_id is not NULL or status != Reserved
@@ -361,11 +428,15 @@ describe("Donation Lifecycle Rules - Volunteer Accept", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Delivery already assigned or not found.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
     });
 
     test("verifies the SQL condition includes status = 'Reserved' AND volunteer_id IS NULL", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10, accepted_by: 5 }]);
+            }
             callback(null, { affectedRows: 1 });
         });
 
@@ -373,16 +444,40 @@ describe("Donation Lifecycle Rules - Volunteer Accept", () => {
             .put("/api/volunteer/accept/1")
             .set("Authorization", "Bearer token");
 
-        const sql = db.query.mock.calls[0][0];
-        expect(sql).toContain("status = 'Reserved'");
-        expect(sql).toContain("volunteer_id IS NULL");
+        const updateSqlCall = db.query.mock.calls.find(call => typeof call[0] === "string" && call[0].includes("status = 'Assigned'"));
+        expect(updateSqlCall[0]).toContain("status = 'Reserved'");
+        expect(updateSqlCall[0]).toContain("volunteer_id IS NULL");
+    });
+
+    test("Notification failure does not break successful volunteer acceptance", async () => {
+        jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
+        notificationService.createNotification.mockRejectedValue(new Error("Notification DB error"));
+
+        db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10, accepted_by: 5 }]);
+            }
+            callback(null, { affectedRows: 1 });
+        });
+
+        const response = await request(app)
+            .put("/api/volunteer/accept/1")
+            .set("Authorization", "Bearer token");
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe("Delivery accepted successfully.");
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(2);
     });
 });
 
 describe("Donation Lifecycle Rules - Volunteer Complete", () => {
-    test("Assigned donation can be completed by its assigned volunteer", async () => {
+    test("Assigned donation can be completed by its assigned volunteer and creates exactly two DONATION_COMPLETED notifications", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10, accepted_by: 5 }]);
+            }
             callback(null, { affectedRows: 1 });
         });
 
@@ -393,16 +488,32 @@ describe("Donation Lifecycle Rules - Volunteer Complete", () => {
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
         expect(response.body.message).toBe("Delivery marked as completed.");
-        expect(db.query).toHaveBeenCalledTimes(1);
 
-        const sql = db.query.mock.calls[0][0];
-        expect(sql).toContain("status = 'Completed'");
-        expect(sql).toContain("volunteer_id = ?");
-        expect(sql).toContain("status = 'Assigned'");
-        expect(db.query.mock.calls[0][1]).toEqual([1, 20]);
+        const updateSqlCall = db.query.mock.calls.find(call => typeof call[0] === "string" && call[0].includes("status = 'Completed'"));
+        expect(updateSqlCall).toBeDefined();
+        expect(updateSqlCall[0]).toContain("status = 'Completed'");
+        expect(updateSqlCall[0]).toContain("volunteer_id = ?");
+        expect(updateSqlCall[0]).toContain("status = 'Assigned'");
+        expect(updateSqlCall[1]).toEqual([1, 20]);
+
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(2);
+        expect(notificationService.createNotification).toHaveBeenCalledWith({
+            userId: 10,
+            type: "DONATION_COMPLETED",
+            title: "Donation Completed",
+            message: "Your donation has been successfully delivered.",
+            donationId: 1
+        });
+        expect(notificationService.createNotification).toHaveBeenCalledWith({
+            userId: 5,
+            type: "DONATION_COMPLETED",
+            title: "Donation Completed",
+            message: "The donation delivery has been completed.",
+            donationId: 1
+        });
     });
 
-    test("A different volunteer cannot complete it", async () => {
+    test("A different volunteer cannot complete it and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 99, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
             // affectedRows is 0 because volunteer_id != 99
@@ -416,9 +527,10 @@ describe("Donation Lifecycle Rules - Volunteer Complete", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Delivery not found or already completed.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
     });
 
-    test("Reserved donation cannot be completed", async () => {
+    test("Reserved donation cannot be completed and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
             // affectedRows is 0 because status != Assigned
@@ -432,9 +544,10 @@ describe("Donation Lifecycle Rules - Volunteer Complete", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Delivery not found or already completed.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
     });
 
-    test("Already Completed donation cannot be completed", async () => {
+    test("Already Completed donation cannot be completed and creates no notification", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
             // affectedRows is 0 because status != Assigned
@@ -448,11 +561,15 @@ describe("Donation Lifecycle Rules - Volunteer Complete", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe("Delivery not found or already completed.");
+        expect(notificationService.createNotification).not.toHaveBeenCalled();
     });
 
     test("verifies the SQL condition protects both volunteer_id and status = 'Assigned'", async () => {
         jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
         db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10, accepted_by: 5 }]);
+            }
             callback(null, { affectedRows: 1 });
         });
 
@@ -460,15 +577,36 @@ describe("Donation Lifecycle Rules - Volunteer Complete", () => {
             .put("/api/volunteer/complete/1")
             .set("Authorization", "Bearer token");
 
-        const sql = db.query.mock.calls[0][0];
-        expect(sql).toContain("volunteer_id = ?");
-        expect(sql).toContain("status = 'Assigned'");
-        expect(db.query.mock.calls[0][1]).toEqual([1, 20]);
+        const updateSqlCall = db.query.mock.calls.find(call => typeof call[0] === "string" && call[0].includes("status = 'Completed'"));
+        expect(updateSqlCall[0]).toContain("volunteer_id = ?");
+        expect(updateSqlCall[0]).toContain("status = 'Assigned'");
+        expect(updateSqlCall[1]).toEqual([1, 20]);
+    });
+
+    test("Notification failure does not break successful volunteer completion", async () => {
+        jwt.verify.mockReturnValue({ id: 20, role: "volunteer" });
+        notificationService.createNotification.mockRejectedValue(new Error("Notification DB error"));
+
+        db.query.mockImplementation((sql, params, callback) => {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: 10, accepted_by: 5 }]);
+            }
+            callback(null, { affectedRows: 1 });
+        });
+
+        const response = await request(app)
+            .put("/api/volunteer/complete/1")
+            .set("Authorization", "Bearer token");
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe("Delivery marked as completed.");
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(2);
     });
 });
 
 describe("Donation Lifecycle Concurrency & Race Conditions", () => {
-    test("Two simultaneous NGO acceptance attempts for the same Available donation: exactly one succeeds, one fails, and final state is Reserved by winning NGO", async () => {
+    test("Two simultaneous NGO acceptance attempts for the same Available donation: exactly one succeeds, one fails, exactly one notification created, and final state is Reserved by winning NGO", async () => {
         jwt.verify.mockImplementation((token) => {
             if (token === "ngo_token_1") return { id: 101, role: "ngo" };
             if (token === "ngo_token_2") return { id: 102, role: "ngo" };
@@ -479,11 +617,15 @@ describe("Donation Lifecycle Concurrency & Race Conditions", () => {
             id: 1,
             status: "Available",
             accepted_by: null,
+            donor_id: 10,
             expiry_time: "2099-01-01T00:00:00.000Z"
         };
 
         db.query.mockImplementation((sql, params, callback) => {
-            if (sql.includes("status='Reserved'") && sql.includes("status='Available'")) {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: donationRow.donor_id }]);
+            }
+            if (typeof sql === "string" && sql.includes("status='Reserved'") && sql.includes("status='Available'")) {
                 const [ngoId, donationId] = params;
                 if (donationRow.id === donationId && donationRow.status === "Available") {
                     donationRow.status = "Reserved";
@@ -530,9 +672,19 @@ describe("Donation Lifecycle Concurrency & Race Conditions", () => {
         } else {
             expect(donationRow.accepted_by).toBe(102);
         }
+
+        // Only the winning NGO acceptance sends a notification
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
+        expect(notificationService.createNotification).toHaveBeenCalledWith({
+            userId: 10,
+            type: "DONATION_ACCEPTED",
+            title: "Donation Accepted",
+            message: "Your donation has been accepted by an NGO.",
+            donationId: 1
+        });
     });
 
-    test("Two simultaneous volunteer acceptance attempts for the same Reserved donation: exactly one succeeds, one fails, and final state is Assigned to winning volunteer", async () => {
+    test("Two simultaneous volunteer acceptance attempts for the same Reserved donation: exactly one succeeds, one fails, exactly two notifications created, and final state is Assigned to winning volunteer", async () => {
         jwt.verify.mockImplementation((token) => {
             if (token === "vol_token_1") return { id: 201, role: "volunteer" };
             if (token === "vol_token_2") return { id: 202, role: "volunteer" };
@@ -542,12 +694,16 @@ describe("Donation Lifecycle Concurrency & Race Conditions", () => {
         const donationRow = {
             id: 1,
             status: "Reserved",
+            donor_id: 10,
             accepted_by: 101,
             volunteer_id: null
         };
 
         db.query.mockImplementation((sql, params, callback) => {
-            if (sql.includes("status = 'Assigned'") && sql.includes("status = 'Reserved'")) {
+            if (typeof sql === "string" && sql.includes("SELECT donor_id")) {
+                return callback(null, [{ donor_id: donationRow.donor_id, accepted_by: donationRow.accepted_by }]);
+            }
+            if (typeof sql === "string" && sql.includes("status = 'Assigned'") && sql.includes("status = 'Reserved'")) {
                 const [volunteerId, donationId] = params;
                 if (donationRow.id === donationId && donationRow.status === "Reserved" && donationRow.volunteer_id === null) {
                     donationRow.status = "Assigned";
@@ -594,6 +750,22 @@ describe("Donation Lifecycle Concurrency & Race Conditions", () => {
         } else {
             expect(donationRow.volunteer_id).toBe(202);
         }
+
+        // Only the winning volunteer acceptance sends 2 notifications (donor + NGO)
+        expect(notificationService.createNotification).toHaveBeenCalledTimes(2);
+        expect(notificationService.createNotification).toHaveBeenCalledWith({
+            userId: 10,
+            type: "VOLUNTEER_ASSIGNED",
+            title: "Volunteer Assigned",
+            message: "A volunteer has been assigned to your donation.",
+            donationId: 1
+        });
+        expect(notificationService.createNotification).toHaveBeenCalledWith({
+            userId: 101,
+            type: "VOLUNTEER_ASSIGNED",
+            title: "Volunteer Assigned",
+            message: "A volunteer has been assigned to the donation.",
+            donationId: 1
+        });
     });
 });
-

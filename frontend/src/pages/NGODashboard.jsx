@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/client";
+import NotificationBell from "../components/NotificationBell";
 
 function getUrgencyLabel(expiryTime) {
     if (!expiryTime) return "";
@@ -122,7 +123,10 @@ function NGODashboard() {
 
     return (
         <div style={{ padding: "30px" }}>
-            <h1>NGO Dashboard</h1>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <h1 style={{ margin: 0 }}>NGO Dashboard</h1>
+                <NotificationBell />
+            </div>
 
             <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
                 <button

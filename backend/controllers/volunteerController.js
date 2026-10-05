@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const notificationService = require("../services/notificationService");
 
 // ==========================
 // Get Available Deliveries
@@ -89,7 +90,7 @@ const acceptDelivery = (req, res) => {
     db.query(
         sql,
         [volunteerId, donationId],
-        (err, result) => {
+        async (err, result) => {
 
             if (err) {
                 console.error("ACCEPT DELIVERY ERROR:", err);
@@ -104,6 +105,54 @@ const acceptDelivery = (req, res) => {
                     success: false,
                     message: "Delivery already assigned or not found."
                 });
+            }
+
+            try {
+                const fetchSql = "SELECT donor_id, accepted_by FROM food_items WHERE id = ?";
+                const rows = await new Promise((resolve, reject) => {
+                    db.query(fetchSql, [donationId], (fetchErr, results) => {
+                        if (fetchErr) return reject(fetchErr);
+                        resolve(results);
+                    });
+                });
+
+                if (Array.isArray(rows) && rows.length > 0) {
+                    const donation = rows[0];
+                    const promises = [];
+
+                    if (donation.donor_id) {
+                        promises.push(
+                            notificationService.createNotification({
+                                userId: donation.donor_id,
+                                type: "VOLUNTEER_ASSIGNED",
+                                title: "Volunteer Assigned",
+                                message: "A volunteer has been assigned to your donation.",
+                                donationId
+                            })
+                        );
+                    }
+
+                    if (donation.accepted_by) {
+                        promises.push(
+                            notificationService.createNotification({
+                                userId: donation.accepted_by,
+                                type: "VOLUNTEER_ASSIGNED",
+                                title: "Volunteer Assigned",
+                                message: "A volunteer has been assigned to the donation.",
+                                donationId
+                            })
+                        );
+                    }
+
+                    const results = await Promise.allSettled(promises);
+                    results.forEach((r) => {
+                        if (r.status === "rejected") {
+                            console.error("NOTIFICATION DISPATCH ERROR (VOLUNTEER_ASSIGNED):", r.reason);
+                        }
+                    });
+                }
+            } catch (notifErr) {
+                console.error("NOTIFICATION DISPATCH ERROR (VOLUNTEER_ASSIGNED):", notifErr);
             }
 
             res.json({
@@ -210,7 +259,7 @@ const markDeliveryCompleted = (req, res) => {
     db.query(
         sql,
         [donationId, volunteerId],
-        (err, result) => {
+        async (err, result) => {
 
             if (err) {
                 console.error("MARK DELIVERY COMPLETED ERROR:", err);
@@ -225,6 +274,54 @@ const markDeliveryCompleted = (req, res) => {
                     success: false,
                     message: "Delivery not found or already completed."
                 });
+            }
+
+            try {
+                const fetchSql = "SELECT donor_id, accepted_by FROM food_items WHERE id = ?";
+                const rows = await new Promise((resolve, reject) => {
+                    db.query(fetchSql, [donationId], (fetchErr, results) => {
+                        if (fetchErr) return reject(fetchErr);
+                        resolve(results);
+                    });
+                });
+
+                if (Array.isArray(rows) && rows.length > 0) {
+                    const donation = rows[0];
+                    const promises = [];
+
+                    if (donation.donor_id) {
+                        promises.push(
+                            notificationService.createNotification({
+                                userId: donation.donor_id,
+                                type: "DONATION_COMPLETED",
+                                title: "Donation Completed",
+                                message: "Your donation has been successfully delivered.",
+                                donationId
+                            })
+                        );
+                    }
+
+                    if (donation.accepted_by) {
+                        promises.push(
+                            notificationService.createNotification({
+                                userId: donation.accepted_by,
+                                type: "DONATION_COMPLETED",
+                                title: "Donation Completed",
+                                message: "The donation delivery has been completed.",
+                                donationId
+                            })
+                        );
+                    }
+
+                    const results = await Promise.allSettled(promises);
+                    results.forEach((r) => {
+                        if (r.status === "rejected") {
+                            console.error("NOTIFICATION DISPATCH ERROR (DONATION_COMPLETED):", r.reason);
+                        }
+                    });
+                }
+            } catch (notifErr) {
+                console.error("NOTIFICATION DISPATCH ERROR (DONATION_COMPLETED):", notifErr);
             }
 
             res.json({

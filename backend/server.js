@@ -10,6 +10,7 @@ const foodRoutes = require("./routes/foodRoutes");
 const ngoRoutes = require("./routes/ngoRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const volunteerRoutes = require("./routes/volunteerRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/ngo", ngoRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use("/api/volunteer", volunteerRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 
 // ==========================

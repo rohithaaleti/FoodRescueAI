@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import api from "../api/client";
+import NotificationBell from "../components/NotificationBell";
 
 const RestaurantDashboard = () => {
   const navigate = useNavigate();
@@ -97,7 +98,10 @@ const RestaurantDashboard = () => {
             <p>Welcome back 👋</p>
           </div>
 
-          <FaUserCircle className="profile-icon" />
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <NotificationBell />
+            <FaUserCircle className="profile-icon" />
+          </div>
         </div>
 
         <div className="cards">

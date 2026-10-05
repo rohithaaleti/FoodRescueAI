@@ -1,6 +1,7 @@
 const db = require("../config/db");
 const matchingService = require("../services/matchingService");
 const aiRecommendationService = require("../services/aiRecommendationService");
+const notificationService = require("../services/notificationService");
 
 // ==========================
 // Get Available Food
@@ -68,7 +69,7 @@ const acceptDonation = (req, res) => {
             AND expiry_time > NOW()
     `;
 
-    db.query(sql, [ngoId, donationId], (err, result) => {
+    db.query(sql, [ngoId, donationId], async (err, result) => {
 
         if (err) {
             console.error("ACCEPT DONATION ERROR:", err);
@@ -83,6 +84,28 @@ const acceptDonation = (req, res) => {
                 success: false,
                 message: "Donation already accepted or not found."
             });
+        }
+
+        try {
+            const fetchSql = "SELECT donor_id FROM food_items WHERE id = ?";
+            const rows = await new Promise((resolve, reject) => {
+                db.query(fetchSql, [donationId], (fetchErr, results) => {
+                    if (fetchErr) return reject(fetchErr);
+                    resolve(results);
+                });
+            });
+
+            if (Array.isArray(rows) && rows.length > 0 && rows[0].donor_id) {
+                await notificationService.createNotification({
+                    userId: rows[0].donor_id,
+                    type: "DONATION_ACCEPTED",
+                    title: "Donation Accepted",
+                    message: "Your donation has been accepted by an NGO.",
+                    donationId
+                });
+            }
+        } catch (notifErr) {
+            console.error("NOTIFICATION DISPATCH ERROR (DONATION_ACCEPTED):", notifErr);
         }
 
         res.json({

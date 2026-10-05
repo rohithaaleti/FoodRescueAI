@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/client";
+import NotificationBell from "../components/NotificationBell";
 import "./NGOProfile.css";
 
 const ALL_FOOD_TYPES = ["Veg", "Non-Veg", "Vegan", "Other"];
@@ -251,7 +252,7 @@ function NGOProfile() {
                     >
                         ← Back to Dashboard
                     </button>
-                    <div className="ngo-profile-nav-buttons">
+                    <div className="ngo-profile-nav-buttons" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
                         <button
                             type="button"
                             className="ngo-nav-btn"
@@ -259,6 +260,7 @@ function NGOProfile() {
                         >
                             My Accepted Donations
                         </button>
+                        <NotificationBell />
                     </div>
                 </div>
 

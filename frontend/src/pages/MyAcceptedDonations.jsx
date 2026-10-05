@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
+import NotificationBell from "../components/NotificationBell";
 
 function MyAcceptedDonations() {
     const [donations, setDonations] = useState([]);
@@ -23,8 +24,10 @@ function MyAcceptedDonations() {
 
     return (
         <div style={{ padding: "30px" }}>
-
-            <h1>My Accepted Donations</h1>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <h1 style={{ margin: 0 }}>My Accepted Donations</h1>
+                <NotificationBell />
+            </div>
 
             <table border="1" cellPadding="10">
 
