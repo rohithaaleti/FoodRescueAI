@@ -20,6 +20,31 @@ function createNotification({ userId, type, title, message, donationId = null })
             return reject(err);
         }
 
+        if (typeof type !== "string" || type.trim().length > 50) {
+            return reject(new Error("Notification type must not exceed 50 characters."));
+        }
+
+        if (typeof title !== "string" || title.trim().length > 255) {
+            return reject(new Error("Notification title must not exceed 255 characters."));
+        }
+
+        if (typeof message !== "string" || message.trim().length > 5000) {
+            return reject(new Error("Notification message must not exceed 5000 characters."));
+        }
+
+        const validUserId = Number(userId);
+        if (!Number.isInteger(validUserId) || validUserId <= 0 || validUserId > 2147483647) {
+            return reject(new Error("Invalid recipient user ID."));
+        }
+
+        let validDonationId = null;
+        if (donationId !== undefined && donationId !== null) {
+            validDonationId = Number(donationId);
+            if (!Number.isInteger(validDonationId) || validDonationId <= 0 || validDonationId > 2147483647) {
+                return reject(new Error("Invalid donation ID."));
+            }
+        }
+
         const sql = `
             INSERT IGNORE INTO notifications (user_id, type, title, message, donation_id)
             VALUES (?, ?, ?, ?, ?)

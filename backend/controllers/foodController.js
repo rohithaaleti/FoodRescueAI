@@ -29,11 +29,49 @@ const addFood = (req, res) => {
         });
     }
 
-    const parsedQuantity = Number(quantity);
-    if (quantity === undefined || quantity === null || (typeof quantity === "string" && quantity.trim() === "") || isNaN(parsedQuantity) || parsedQuantity <= 0) {
+    const trimmedFoodName = food_name.trim();
+    if (trimmedFoodName.length > 200) {
         return res.status(400).json({
             success: false,
-            message: "Quantity must be a positive number."
+            message: "Food name must not exceed 200 characters."
+        });
+    }
+
+    const trimmedFoodType = food_type.trim();
+    if (trimmedFoodType.length > 50) {
+        return res.status(400).json({
+            success: false,
+            message: "Food type must not exceed 50 characters."
+        });
+    }
+
+    const trimmedPickupAddress = pickup_address.trim();
+    if (trimmedPickupAddress.length > 500) {
+        return res.status(400).json({
+            success: false,
+            message: "Pickup address must not exceed 500 characters."
+        });
+    }
+
+    if (typeof quantity === "string" && quantity.trim().length > 20) {
+        return res.status(400).json({
+            success: false,
+            message: "Quantity must be a positive number not exceeding 1,000,000."
+        });
+    }
+
+    const parsedQuantity = Number(quantity);
+    if (quantity === undefined || quantity === null || (typeof quantity === "string" && quantity.trim() === "") || isNaN(parsedQuantity) || parsedQuantity <= 0 || parsedQuantity > 1000000) {
+        return res.status(400).json({
+            success: false,
+            message: "Quantity must be a positive number not exceeding 1,000,000."
+        });
+    }
+
+    if (typeof expiry_time === "string" && expiry_time.trim().length > 50) {
+        return res.status(400).json({
+            success: false,
+            message: "Expiry time string exceeds maximum length."
         });
     }
 
@@ -42,6 +80,13 @@ const addFood = (req, res) => {
         return res.status(400).json({
             success: false,
             message: "Expiry time must be a valid future date."
+        });
+    }
+
+    if (image_url !== undefined && image_url !== null && typeof image_url === "string" && image_url.trim().length > 2048) {
+        return res.status(400).json({
+            success: false,
+            message: "Image URL must not exceed 2048 characters."
         });
     }
 
@@ -202,7 +247,7 @@ const getDashboardStats = (req, res) => {
 const deleteDonation = (req, res) => {
 
     const donationId = Number(req.params.id);
-    if (!Number.isInteger(donationId) || donationId <= 0) {
+    if (!Number.isInteger(donationId) || donationId <= 0 || donationId > 2147483647) {
         return res.status(400).json({
             success: false,
             message: "Invalid donation ID."
@@ -276,7 +321,7 @@ const deleteDonation = (req, res) => {
 const getDonationById = (req, res) => {
 
     const donationId = Number(req.params.id);
-    if (!Number.isInteger(donationId) || donationId <= 0) {
+    if (!Number.isInteger(donationId) || donationId <= 0 || donationId > 2147483647) {
         return res.status(400).json({
             success: false,
             message: "Invalid donation ID."
@@ -322,7 +367,7 @@ const getDonationById = (req, res) => {
 const updateDonation = (req, res) => {
 
     const donationId = Number(req.params.id);
-    if (!Number.isInteger(donationId) || donationId <= 0) {
+    if (!Number.isInteger(donationId) || donationId <= 0 || donationId > 2147483647) {
         return res.status(400).json({
             success: false,
             message: "Invalid donation ID."
@@ -350,16 +395,29 @@ const updateDonation = (req, res) => {
                 message: "Food name cannot be empty."
             });
         }
+        const trimmed = food_name.trim();
+        if (trimmed.length > 200) {
+            return res.status(400).json({
+                success: false,
+                message: "Food name must not exceed 200 characters."
+            });
+        }
         fields.push("food_name = ?");
-        values.push(food_name.trim());
+        values.push(trimmed);
     }
 
     if (quantity !== undefined) {
-        const parsedQuantity = Number(quantity);
-        if (quantity === null || (typeof quantity === "string" && quantity.trim() === "") || isNaN(parsedQuantity) || parsedQuantity <= 0) {
+        if (typeof quantity === "string" && quantity.trim().length > 20) {
             return res.status(400).json({
                 success: false,
-                message: "Quantity must be a positive number."
+                message: "Quantity must be a positive number not exceeding 1,000,000."
+            });
+        }
+        const parsedQuantity = Number(quantity);
+        if (quantity === null || (typeof quantity === "string" && quantity.trim() === "") || isNaN(parsedQuantity) || parsedQuantity <= 0 || parsedQuantity > 1000000) {
+            return res.status(400).json({
+                success: false,
+                message: "Quantity must be a positive number not exceeding 1,000,000."
             });
         }
         fields.push("quantity = ?");
@@ -373,11 +431,24 @@ const updateDonation = (req, res) => {
                 message: "Food type cannot be empty."
             });
         }
+        const trimmed = food_type.trim();
+        if (trimmed.length > 50) {
+            return res.status(400).json({
+                success: false,
+                message: "Food type must not exceed 50 characters."
+            });
+        }
         fields.push("food_type = ?");
-        values.push(food_type.trim());
+        values.push(trimmed);
     }
 
     if (expiry_time !== undefined) {
+        if (typeof expiry_time === "string" && expiry_time.trim().length > 50) {
+            return res.status(400).json({
+                success: false,
+                message: "Expiry time string exceeds maximum length."
+            });
+        }
         const expiryDate = new Date(expiry_time);
         if (!expiry_time || isNaN(expiryDate.getTime()) || expiryDate.getTime() <= Date.now()) {
             return res.status(400).json({
@@ -396,14 +467,30 @@ const updateDonation = (req, res) => {
                 message: "Pickup address cannot be empty."
             });
         }
+        const trimmed = pickup_address.trim();
+        if (trimmed.length > 500) {
+            return res.status(400).json({
+                success: false,
+                message: "Pickup address must not exceed 500 characters."
+            });
+        }
         fields.push("pickup_address = ?");
-        values.push(pickup_address.trim());
+        values.push(trimmed);
     }
 
     if (image_url !== undefined && image_url !== null) {
-        if (typeof image_url === "string" && image_url.trim() !== "") {
-            fields.push("image_url = ?");
-            values.push(image_url.trim());
+        if (typeof image_url === "string") {
+            const trimmed = image_url.trim();
+            if (trimmed.length > 2048) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Image URL must not exceed 2048 characters."
+                });
+            }
+            if (trimmed !== "") {
+                fields.push("image_url = ?");
+                values.push(trimmed);
+            }
         }
     }
 

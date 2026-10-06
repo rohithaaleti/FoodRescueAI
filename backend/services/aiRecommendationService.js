@@ -21,6 +21,10 @@ function buildSanitizedAIPayload(donation, candidateNgos = []) {
         throw new Error("Donation data is required to build AI payload");
     }
 
+    if (donation.food_type && typeof donation.food_type === "string" && donation.food_type.length > 100) {
+        throw new Error("Donation food_type exceeds maximum length of 100 characters");
+    }
+
     const firstCandidate = candidateNgos && candidateNgos[0];
     const urgency = firstCandidate?.urgency || {
         label: "Standard",
@@ -28,7 +32,7 @@ function buildSanitizedAIPayload(donation, candidateNgos = []) {
     };
 
     const sanitizedDonation = {
-        food_type: donation.food_type,
+        food_type: typeof donation.food_type === "string" ? donation.food_type.trim() : donation.food_type,
         quantity: donation.quantity,
         expiry_time: donation.expiry_time,
         urgency: {
@@ -37,17 +41,26 @@ function buildSanitizedAIPayload(donation, candidateNgos = []) {
         }
     };
 
-    const sanitizedNgos = (candidateNgos || []).map(ngo => ({
-        ngo_id: ngo.ngo_id,
-        organization_name: ngo.organization_name || ngo.ngo_name || `NGO #${ngo.ngo_id}`,
-        score: ngo.score,
-        distance_km: ngo.distance_km,
-        remaining_capacity: ngo.remaining_capacity,
-        max_capacity: ngo.max_capacity,
-        current_active_donations: ngo.current_active_donations,
-        max_active_donations: ngo.max_active_donations,
-        deterministic_reasons: Array.isArray(ngo.reasons) ? [...ngo.reasons] : []
-    }));
+    const boundedCandidates = (candidateNgos || []).slice(0, 50);
+
+    const sanitizedNgos = boundedCandidates.map(ngo => {
+        const orgName = ngo.organization_name || ngo.ngo_name || `NGO #${ngo.ngo_id}`;
+        if (typeof orgName === "string" && orgName.length > 255) {
+            throw new Error(`Candidate NGO ${ngo.ngo_id} organization_name exceeds 255 characters`);
+        }
+
+        return {
+            ngo_id: ngo.ngo_id,
+            organization_name: orgName,
+            score: ngo.score,
+            distance_km: ngo.distance_km,
+            remaining_capacity: ngo.remaining_capacity,
+            max_capacity: ngo.max_capacity,
+            current_active_donations: ngo.current_active_donations,
+            max_active_donations: ngo.max_active_donations,
+            deterministic_reasons: Array.isArray(ngo.reasons) ? ngo.reasons.slice(0, 10).map(r => String(r).slice(0, 200)) : []
+        };
+    });
 
     return {
         donation: sanitizedDonation,
@@ -67,6 +80,14 @@ function validateAndFilterAIResponse(aiOutput, candidateNgos = []) {
 
     if (!Array.isArray(aiOutput.recommendations)) {
         return { valid: false, error: "AI output is missing recommendations array" };
+    }
+
+    if (aiOutput.recommendations.length > 50) {
+        return { valid: false, error: "AI output recommendations array exceeds maximum allowed length of 50 items" };
+    }
+
+    if (aiOutput.summary && typeof aiOutput.summary === "string" && aiOutput.summary.length > 1000) {
+        return { valid: false, error: "AI output summary exceeds maximum allowed length of 1000 characters" };
     }
 
     const candidateIdSet = new Set(candidateNgos.map(n => Number(n.ngo_id)));
@@ -89,6 +110,10 @@ function validateAndFilterAIResponse(aiOutput, candidateNgos = []) {
 
         if (typeof item.reason !== "string" || !item.reason.trim()) {
             return { valid: false, error: `Missing or empty reason for NGO ID ${item.ngo_id}` };
+        }
+
+        if (item.reason.length > 1000) {
+            return { valid: false, error: `AI output reason for NGO ID ${item.ngo_id} exceeds maximum allowed length of 1000 characters` };
         }
 
         let priority = "medium";

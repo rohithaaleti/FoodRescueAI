@@ -25,7 +25,7 @@ async function generateRecommendationExplanation(sanitizedPayload, options = {})
             },
             {
                 role: "user",
-                content: `Candidate NGOs & Donation Data:\n${JSON.stringify(sanitizedPayload, null, 2)}`
+                content: `Candidate NGOs & Donation Data:\n<DATA>\n${JSON.stringify(sanitizedPayload, null, 2)}\n</DATA>`
             }
         ],
         response_format: { type: "json_object" },

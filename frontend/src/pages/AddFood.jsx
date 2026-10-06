@@ -112,6 +112,7 @@ const AddFood = () => {
           type="text"
           placeholder="Food Name"
           name="food_name"
+          maxLength={200}
           value={food.food_name}
           onChange={handleChange}
           required
@@ -121,6 +122,7 @@ const AddFood = () => {
           type="text"
           placeholder="Quantity (e.g. 50 Plates)"
           name="quantity"
+          maxLength={20}
           value={food.quantity}
           onChange={handleChange}
           required
@@ -167,6 +169,7 @@ const AddFood = () => {
           type="text"
           placeholder="Pickup Address"
           name="pickup_address"
+          maxLength={500}
           value={food.pickup_address}
           onChange={handleChange}
           required

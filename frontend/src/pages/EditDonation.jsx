@@ -136,6 +136,7 @@ const EditDonation = () => {
                     <input
                         type="text"
                         name="food_name"
+                        maxLength={200}
                         value={formData.food_name}
                         onChange={handleChange}
                         required
@@ -150,6 +151,7 @@ const EditDonation = () => {
                     <input
                         type="text"
                         name="quantity"
+                        maxLength={20}
                         value={formData.quantity}
                         onChange={handleChange}
                         required
@@ -194,6 +196,7 @@ const EditDonation = () => {
 
                     <textarea
                         name="pickup_address"
+                        maxLength={500}
                         value={formData.pickup_address}
                         onChange={handleChange}
                         required
@@ -208,6 +211,7 @@ const EditDonation = () => {
                     <input
                         type="text"
                         name="image_url"
+                        maxLength={2048}
                         value={formData.image_url}
                         onChange={handleChange}
                     />

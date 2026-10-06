@@ -68,7 +68,7 @@ const acceptDelivery = (req, res) => {
 
     const volunteerId = req.user.id;
     const donationId = Number(req.params.id);
-    if (!Number.isInteger(donationId) || donationId <= 0) {
+    if (!Number.isInteger(donationId) || donationId <= 0 || donationId > 2147483647) {
         return res.status(400).json({
             success: false,
             message: "Invalid donation ID."
@@ -240,7 +240,7 @@ const markDeliveryCompleted = (req, res) => {
 
     const volunteerId = req.user.id;
     const donationId = Number(req.params.id);
-    if (!Number.isInteger(donationId) || donationId <= 0) {
+    if (!Number.isInteger(donationId) || donationId <= 0 || donationId > 2147483647) {
         return res.status(400).json({
             success: false,
             message: "Invalid donation ID."

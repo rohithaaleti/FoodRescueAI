@@ -4,6 +4,18 @@ exports.getNotifications = (req, res) => {
     const userId = req.user.id;
     const { unreadOnly, limit, offset } = req.query;
 
+    if (limit !== undefined && typeof limit === "string" && limit.length > 10) {
+        return res.status(400).json({ error: "Query parameter limit exceeds maximum length." });
+    }
+
+    if (offset !== undefined && typeof offset === "string" && offset.length > 10) {
+        return res.status(400).json({ error: "Query parameter offset exceeds maximum length." });
+    }
+
+    if (unreadOnly !== undefined && typeof unreadOnly === "string" && unreadOnly.length > 10) {
+        return res.status(400).json({ error: "Query parameter unreadOnly exceeds maximum length." });
+    }
+
     let parsedLimit = parseInt(limit, 10);
     if (isNaN(parsedLimit) || parsedLimit <= 0) {
         parsedLimit = 20;
@@ -11,9 +23,12 @@ exports.getNotifications = (req, res) => {
         parsedLimit = 100;
     }
 
-    let parsedOffset = parseInt(offset, 10);
-    if (isNaN(parsedOffset) || parsedOffset < 0) {
-        parsedOffset = 0;
+    let parsedOffset = 0;
+    if (offset !== undefined) {
+        parsedOffset = parseInt(offset, 10);
+        if (isNaN(parsedOffset) || parsedOffset < 0 || parsedOffset > 1000000) {
+            return res.status(400).json({ error: "Offset parameter is invalid or exceeds maximum limit." });
+        }
     }
 
     const isUnreadOnly = unreadOnly === "true";
@@ -62,7 +77,7 @@ exports.markAsRead = (req, res) => {
     const userId = req.user.id;
     const notificationId = parseInt(req.params.id, 10);
 
-    if (isNaN(notificationId) || notificationId <= 0) {
+    if (isNaN(notificationId) || notificationId <= 0 || notificationId > 2147483647 || String(req.params.id).length > 10) {
         return res.status(400).json({ error: "Invalid notification ID." });
     }
 

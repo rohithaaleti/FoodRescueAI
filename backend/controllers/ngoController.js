@@ -48,7 +48,7 @@ const acceptDonation = (req, res) => {
     }
 
     const donationId = Number(req.params.id);
-    if (!Number.isInteger(donationId) || donationId <= 0) {
+    if (!Number.isInteger(donationId) || donationId <= 0 || donationId > 2147483647) {
         return res.status(400).json({
             success: false,
             message: "Invalid donation ID."
@@ -154,7 +154,7 @@ const getMyAcceptedDonations = (req, res) => {
 // ==========================
 const getRecommendationsForDonation = (req, res) => {
     const foodId = Number(req.params.foodId);
-    if (!Number.isInteger(foodId) || foodId <= 0) {
+    if (!Number.isInteger(foodId) || foodId <= 0 || foodId > 2147483647) {
         return res.status(400).json({
             success: false,
             message: "Invalid donation ID."
@@ -301,19 +301,19 @@ const updateNGOProfile = (req, res) => {
 
     // Validate max_capacity
     const capacityNum = Number(max_capacity);
-    if (!Number.isInteger(capacityNum) || capacityNum <= 0) {
+    if (!Number.isInteger(capacityNum) || capacityNum <= 0 || capacityNum > 1000000) {
         return res.status(400).json({
             success: false,
-            message: "Max capacity must be a positive integer greater than 0."
+            message: "Max capacity must be a positive integer between 1 and 1,000,000."
         });
     }
 
     // Validate max_active_donations
     const activeDonationsNum = Number(max_active_donations);
-    if (!Number.isInteger(activeDonationsNum) || activeDonationsNum <= 0) {
+    if (!Number.isInteger(activeDonationsNum) || activeDonationsNum <= 0 || activeDonationsNum > 1000) {
         return res.status(400).json({
             success: false,
-            message: "Max active donations must be a positive integer greater than 0."
+            message: "Max active donations must be a positive integer between 1 and 1,000."
         });
     }
 
@@ -347,6 +347,20 @@ const updateNGOProfile = (req, res) => {
     }
 
     // Validate supported_food_types
+    if (typeof supported_food_types === "string" && supported_food_types.length > 255) {
+        return res.status(400).json({
+            success: false,
+            message: "Supported food types must not exceed 255 characters."
+        });
+    }
+
+    if (Array.isArray(supported_food_types) && supported_food_types.length > 10) {
+        return res.status(400).json({
+            success: false,
+            message: "Too many supported food types provided."
+        });
+    }
+
     const ALLOWED_FOOD_TYPES = ["Veg", "Non-Veg", "Vegan", "Other"];
     let foodTypesArray = [];
     if (Array.isArray(supported_food_types)) {
@@ -371,6 +385,12 @@ const updateNGOProfile = (req, res) => {
     }
 
     const foodTypesStr = foodTypesArray.join(",");
+    if (foodTypesStr.length > 255) {
+        return res.status(400).json({
+            success: false,
+            message: "Supported food types must not exceed 255 characters."
+        });
+    }
 
     const upsertSql = `
         INSERT INTO ngo_profiles (

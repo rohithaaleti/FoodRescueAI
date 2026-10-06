@@ -78,6 +78,7 @@ function Register() {
                     type="text"
                     name="full_name"
                     placeholder="Full Name"
+                    maxLength={100}
                     onChange={handleChange}
                     required
                 />
@@ -86,6 +87,7 @@ function Register() {
                     type="email"
                     name="email"
                     placeholder="Email"
+                    maxLength={255}
                     onChange={handleChange}
                     required
                 />
@@ -94,6 +96,7 @@ function Register() {
                     type="password"
                     name="password"
                     placeholder="Password"
+                    maxLength={128}
                     onChange={handleChange}
                     required
                 />
@@ -102,6 +105,7 @@ function Register() {
                     type="text"
                     name="phone"
                     placeholder="Phone"
+                    maxLength={20}
                     onChange={handleChange}
                 />
 
@@ -133,6 +137,7 @@ function Register() {
                     type="text"
                     name="organization_name"
                     placeholder="Organization Name"
+                    maxLength={255}
                     onChange={handleChange}
                 />
 
@@ -140,6 +145,7 @@ function Register() {
                     name="address"
                     placeholder="Address"
                     rows="3"
+                    maxLength={500}
                     onChange={handleChange}
                 />
 

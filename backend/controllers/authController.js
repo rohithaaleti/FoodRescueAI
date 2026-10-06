@@ -44,6 +44,27 @@ const registerUser = async (req, res) => {
             });
         }
 
+        if (trimmedName.length > 100) {
+            return res.status(400).json({
+                success: false,
+                message: "Full name must not exceed 100 characters."
+            });
+        }
+
+        if (trimmedEmail.length > 255) {
+            return res.status(400).json({
+                success: false,
+                message: "Email must not exceed 255 characters."
+            });
+        }
+
+        if (password.length > 128) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must not exceed 128 characters."
+            });
+        }
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(trimmedEmail)) {
             return res.status(400).json({
@@ -60,8 +81,28 @@ const registerUser = async (req, res) => {
         }
 
         const trimmedPhone = typeof phone === "string" ? phone.trim() : (phone || null);
+        if (trimmedPhone && typeof trimmedPhone === "string" && trimmedPhone.length > 20) {
+            return res.status(400).json({
+                success: false,
+                message: "Phone number must not exceed 20 characters."
+            });
+        }
+
         const trimmedOrg = typeof organization_name === "string" ? organization_name.trim() : (organization_name || null);
+        if (trimmedOrg && typeof trimmedOrg === "string" && trimmedOrg.length > 255) {
+            return res.status(400).json({
+                success: false,
+                message: "Organization name must not exceed 255 characters."
+            });
+        }
+
         const trimmedAddress = typeof address === "string" ? address.trim() : (address || null);
+        if (trimmedAddress && typeof trimmedAddress === "string" && trimmedAddress.length > 500) {
+            return res.status(400).json({
+                success: false,
+                message: "Address must not exceed 500 characters."
+            });
+        }
 
         db.query(
             "SELECT * FROM users WHERE email = ?",
@@ -159,6 +200,20 @@ const loginUser = (req, res) => {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
+
+    if (trimmedEmail.length > 255) {
+        return res.status(400).json({
+            success: false,
+            message: "Email must not exceed 255 characters."
+        });
+    }
+
+    if (password.length > 128) {
+        return res.status(400).json({
+            success: false,
+            message: "Password must not exceed 128 characters."
+        });
+    }
 
     db.query(
         "SELECT * FROM users WHERE email = ?",
