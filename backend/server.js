@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 
 const db = require("./config/db");
 
@@ -15,7 +16,26 @@ const { globalLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 
-app.use(cors());
+// Set security headers
+app.use(helmet());
+
+// Configure CORS
+const allowedOrigins = process.env.FRONTEND_ORIGIN 
+    ? process.env.FRONTEND_ORIGIN.split(',') 
+    : ["http://localhost:5173"];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true,
+}));
 app.use(express.json({ limit: "1mb" }));
 app.use(globalLimiter);
 

@@ -14,10 +14,15 @@ const verifyToken = (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     try {
+        if (!process.env.JWT_SECRET) {
+            console.error("CRITICAL ERROR: JWT_SECRET is not defined.");
+            return res.status(500).json({ success: false, message: "Internal Server Error" });
+        }
 
         const decoded = jwt.verify(
             token,
-            process.env.JWT_SECRET
+            process.env.JWT_SECRET,
+            { algorithms: ["HS256"] }
         );
 
         req.user = decoded;

@@ -233,9 +233,9 @@ const loginUser = (req, res) => {
 
             if (result.length === 0) {
 
-                return res.status(404).json({
+                return res.status(401).json({
                     success: false,
-                    message: "User not found"
+                    message: "Invalid email or password"
                 });
 
             }
@@ -253,9 +253,14 @@ const loginUser = (req, res) => {
 
                     return res.status(401).json({
                         success: false,
-                        message: "Invalid Password"
+                        message: "Invalid email or password"
                     });
 
+                }
+
+                if (!process.env.JWT_SECRET) {
+                    console.error("CRITICAL ERROR: JWT_SECRET is not defined.");
+                    return res.status(500).json({ success: false, message: "Server Error" });
                 }
 
                 const token = jwt.sign(
@@ -265,7 +270,8 @@ const loginUser = (req, res) => {
                     },
                     process.env.JWT_SECRET,
                     {
-                        expiresIn: "1d"
+                        expiresIn: "1d",
+                        algorithm: "HS256"
                     }
                 );
 
