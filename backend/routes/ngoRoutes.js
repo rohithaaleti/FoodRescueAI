@@ -3,6 +3,7 @@ const router = express.Router();
 
 const verifyToken = require("../middleware/verifyToken");
 const requireRole = require("../middleware/requireRole");
+const { aiRecommendationLimiter } = require("../middleware/rateLimiter");
 
 const {
     getAvailableFood,
@@ -20,7 +21,13 @@ router.get("/available-food", verifyToken, requireRole("ngo"), getAvailableFood)
 router.get("/my-donations", verifyToken, requireRole("ngo"), getMyAcceptedDonations);
 
 // Recommendations for a donation
-router.get("/recommendations/:foodId", verifyToken, requireRole("ngo"), getRecommendationsForDonation);
+router.get(
+    "/recommendations/:foodId",
+    verifyToken,
+    requireRole("ngo"),
+    aiRecommendationLimiter,
+    getRecommendationsForDonation
+);
 
 // Accept Donation
 router.put("/accept/:id", verifyToken, requireRole("ngo"), acceptDonation);
@@ -30,4 +37,3 @@ router.get("/profile", verifyToken, requireRole("ngo"), getNGOProfile);
 router.put("/profile", verifyToken, requireRole("ngo"), updateNGOProfile);
 
 module.exports = router;
-

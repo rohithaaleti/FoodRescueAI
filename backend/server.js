@@ -11,11 +11,13 @@ const ngoRoutes = require("./routes/ngoRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const volunteerRoutes = require("./routes/volunteerRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const { globalLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
+app.use(globalLimiter);
 
 
 // ==========================
